@@ -2,7 +2,7 @@
 
 ########################################
 #### 	cls_tabFrm_Connections.py 	####
-#### 	Version 241228_2000 grid	####
+#### 	Version 20250506 	grid	####
 ########################################
 
 import tkinter as tk
@@ -10,9 +10,13 @@ from tkinter import messagebox
 
 import myTheme as skin
 import nvpnPort as nvpnT
-import json, time
+import json
+import time
+
+from pubsub import pub
 
 from cls_Dlg_ListboxWndw import ListBoxDialog as dlgRating
+from cls_Frm_ConnStatus import ConnStatusFrame
 
 class TabConnections( tk.Frame ):
 
@@ -33,6 +37,7 @@ class TabConnections( tk.Frame ):
 
 		nvpnT.groupListManager("set")
 		nvpnT.countryListManager("set")
+		nvpnT.loadAllConns()
 
 		# self.connectionConfig['selected']['cntry']
 		self.connectionConfig = {
@@ -54,6 +59,7 @@ class TabConnections( tk.Frame ):
 		self.connLB_GrpVar 	= tk.StringVar()
 		self.connLB_CntrVar = tk.StringVar()
 		self.connLB_CtyVar 	= tk.StringVar()
+		self.connLB_ConnsVar = tk.StringVar()
 
 		# Define variable to hold the value of the filter Entry
 		self.connFltrStrVar = tk.StringVar()
@@ -61,15 +67,19 @@ class TabConnections( tk.Frame ):
 
 		self.activeConnStatus()
 
+		##################################################
 		# The frame that holds all connection-tab widgets
+		##################################################
 		self.tabConnGridFrame = tk.Frame( 
 			self, 
 			bg 		= skin.myBlack, 
 			highlightcolor = skin.myLBlue # ,width 	= self.dimensions[0],height	= self.dimensions[1]
 		)
 
+		#================================================================
 		# Things that go in the tabConnGroupFrm (group selection widgets)
-		# Fold group Frame
+		# tabConnGridFrame( row = 0, column = 0 )
+		#################################################################
 		if True:
 			self.tabConnGroupFrm = tk.LabelFrame(
 				self.tabConnGridFrame,
@@ -105,8 +115,10 @@ class TabConnections( tk.Frame ):
 			self.tabConnGroupClearBtn.grid( row = 1, column = 0, padx = 2 )
 
 
+		#====================================================================
 		# Things that go in the tabConnCountryFrm (country selection widgets)
-		# Fold country Frame
+		# tabConnGridFrame( row = 0, column = 1 )
+		#####################################################################
 		if True:
 			self.tabConnCountryFrm = tk.LabelFrame(
 				self.tabConnGridFrame,
@@ -163,8 +175,10 @@ class TabConnections( tk.Frame ):
 			self.connCntrFilterTxt.grid( row = 0, column = 1 )
 
 
+		#==============================================================
 		# Things that go in the tabConnCityFrm (city selection widgets)
-		# Fold city Frame
+		# tabConnGridFrame( row = 0, column = 2 )
+		###############################################################
 		if True:
 			self.tabConnCityFrm = tk.LabelFrame(
 				self.tabConnGridFrame,
@@ -199,18 +213,11 @@ class TabConnections( tk.Frame ):
 			self.tabConnCityClearBtn.grid( row = 1, column = 0 )
 
 
-		# Thing that goes in the active connection status display (row1,column0)
-		from cls_Frm_ConnStatus import ConnStatusFrame
-		self.tabConnActSttsFrm = ConnStatusFrame( 
-			self.tabConnGridFrame, 
-			dimensions = [ 
-				int( self.dimensions[0] * 0.40 ), 
-				int( self.dimensions[1] * 0.40 ) ] )
-		self.tabConnActSttsFrm.grid( row = 1, column = 1, columnspan = 2 ) # , sticky = 'WENS' 
-
-
+		############################################################################
 		# Things that go in the self.tabConnActionsFrm (all selected values widgets)
-		# Fold actions frame
+		# tabConnGridFrame( row = 1, column = 0 )
+		############################################################################
+
 		if True:
 			self.tabConnActionsFrm = tk.LabelFrame(
 				self.tabConnGridFrame,
@@ -218,79 +225,153 @@ class TabConnections( tk.Frame ):
 				bg 	= skin.myBlack, 
 				fg 	= skin.myNGreen,
 				labelanchor = 'n',
-				font = skin.provideFont(24) )
+				font = skin.provideFont(24) 
+			)
 			self.tabConnActionsFrm.grid( row = 1, column = 0, sticky = 'wens' )
 
-			# Things that go in the tabConnSelectionsFrm
-			# row 1: Connect/disconnect buttons
-			self.tabConnActnsRw1 = tk.Frame(
-				self.tabConnActionsFrm,
-				bg = skin.myBlack )
-			self.tabConnActnsRw1.grid( row = 0, column = 0, sticky = 'we' )
 
-			self.tabConnSelectionsConnStrBtn = tk.Button(
-				self.tabConnActnsRw1,
-				# bg 	= skin.myWhite, 
-				fg 	= skin.myBlack,
-				command = self.makeConnection,
-				font = skin.provideFont(15),
-				text = "nordvpn connect" )
-			self.tabConnSelectionsConnStrBtn.grid( row = 0, column = 0, sticky = 'wens' )
+			##########################################
+			# Things that go in the tabConnActionsFrm
+			# tabConnActionsFrm( row = 0, column = 0 )
+			##########################################
+			
+			# row 0: Connect/disconnect buttons
+			self.tabConnActnsRw0 = tk.Frame(
+				self.tabConnActionsFrm,
+				bg = skin.myBlack 
+			)
+			self.tabConnActnsRw0.grid( row = 0, column = 0, sticky = 'we' )
 
 			self.tabConnDisConnectBtn = tk.Button(
-				self.tabConnActnsRw1,
+				self.tabConnActnsRw0,
 				font = skin.provideFont(18),
 				bg 	= skin.myFalse, 
 				fg 	= skin.myWhite,
 				command = self.disConnect,
-				text = "Disconnect" )
-			self.tabConnDisConnectBtn.grid( row = 0, column = 1 )
+				text = "Disconnect" 
+			)
+			self.tabConnDisConnectBtn.grid( row = 0, column = 0, sticky = 'we' )
 
-			# row 2: selected connection params
-			self.tabConnActnsRw2 = tk.Frame(
+			self.tabConnSelectionsConnStrBtn = tk.Button(
+				self.tabConnActnsRw0,
+				bg 	= skin.myWhite, 
+				fg 	= skin.myBlack,
+				command = self.makeConnection,
+				font = skin.provideFont(15),
+				text = "nordvpn connect" 
+			)
+			self.tabConnSelectionsConnStrBtn.grid( row = 0, column = 1, sticky = 'we' )
+
+
+			# row 1: selected connection values ( [group] country [city] )
+			self.tabConnActnsRw1 = tk.Frame(
 				self.tabConnActionsFrm,
-				bg = skin.myBlack )
-			self.tabConnActnsRw2.grid( row = 1, column = 0, sticky = 'we' )
+				bg = skin.myBlack 
+			)
+			self.tabConnActnsRw1.grid( row = 1, column = 0, sticky = 'we' )
 
 			self.tabConnSelGrpLbl = tk.Label(
-				self.tabConnActnsRw2,
+				self.tabConnActnsRw1,
 				font = skin.provideFont(16),
 				fg 	= skin.myLYellow,
 				bg 	= skin.myBlack,
-				text= nvpnT.chosenGroupManager('get') )
+				text= nvpnT.chosenGroupManager('get') 
+			)
 			self.tabConnSelGrpLbl.grid( row = 0, column = 0 )
 
 			self.tabConnSelCntryLbl = tk.Label(
-				self.tabConnActnsRw2,
+				self.tabConnActnsRw1,
 				font = skin.provideFont(16),
 				fg 	= skin.myLYellow,
 				bg 	= skin.myBlack,
-				text = nvpnT.chosenCountryManager('get') )
+				text = nvpnT.chosenCountryManager('get') 
+			)
 			self.tabConnSelCntryLbl.grid( row = 0, column = 1 )
 
 			self.tabConnSelCtyLbl = tk.Label(
-				self.tabConnActnsRw2,
+				self.tabConnActnsRw1,
 				font = skin.provideFont(16),
 				fg 	= skin.myLYellow,
 				bg 	= skin.myBlack,
-				text = nvpnT.chosenCityManager('get') )
+				text = nvpnT.chosenCityManager('get')
+			)
 			self.tabConnSelCtyLbl.grid( row = 0, column = 2 )
+
+			# row 2: last connections listBox
+			self.tabConnActnsRw2 = tk.Frame(
+				self.tabConnActionsFrm,
+				bg = skin.myBlack 
+			)
+			self.tabConnActnsRw2.grid( row = 2, column = 0, sticky = 'wes' )
+			
+			self.tabConnLastConnsFrm = tk.LabelFrame(
+				self.tabConnActnsRw2,
+				text = "Last 3 Connections",
+				bg 	= skin.myBlack, 
+				fg 	= skin.myNGreen,
+				labelanchor = 'n',
+				font = skin.provideFont(24) 
+			)
+			self.tabConnLastConnsFrm.grid( row = 0, column = 0, sticky = 'wens' )
+			
+			self.selectLastConnLb = tk.Listbox(
+				self.tabConnLastConnsFrm,
+				selectbackground= skin.myNGreen,
+				background 		= skin.myBlack,
+				foreground 		= skin.myLbxFG,
+				width 			= 24,
+				height 			= 4,
+				selectmode  	= 'single',
+				listvariable 	= self.connLB_ConnsVar,
+				font 			= skin.provideFont(14) )
+			self.selectLastConnLb.configure( exportselection = False )
+			self.selectLastConnLb.bind( "<<ListboxSelect>>", self.updateSelectedLastConn )
+			self.selectLastConnLb.grid( row = 0, column = 0, padx = 1, sticky = 'n')
+
 
 		self.doLayOut()
 
 
+
+	def refreshConnStatus(self):
+		########################################################################
+		# Thing that goes in the active connection status display 
+		# tabConnGridFrame( row = 1, column = 1 )
+		########################################################################
+		try:
+			self.tabConnActSttsFrm.grid_info()
+			self.tabConnActSttsFrm.grid_forget()
+
+		except Exception as e:
+			print(f"Exception on self.tabConnActSttsFrm.grid_info() = {e}")
+
+		finally:
+			self.tabConnActSttsFrm = ConnStatusFrame( 
+				self.tabConnGridFrame, 
+				dimensions = [ 
+					int( self.dimensions[0] * 0.40 ), 
+					int( self.dimensions[1] * 0.40 )
+				] 
+			)
+			self.tabConnActSttsFrm.grid( row = 1, column = 1, columnspan = 2, sticky = 'e' )
+
+
+
 	def buildConStr(self):
+		useFollowingFlags = True
 		startStr = ""
 		grp 	= nvpnT.chosenGroupManager('get')
 		cntry 	= nvpnT.chosenCountryManager('get')
 		cty 	= nvpnT.chosenCityManager('get')
 		if len( grp ) > 0:
-			startStr += f" --grp { grp.lower() }"
+			startStr += f" -g { grp.lower() }"
+			if grp.lower() in ['onion_over_vpn']:
+				useFollowingFlags = False
 
-		if len( cntry ) > 0:
+		if ( useFollowingFlags ) and ( len( cntry ) > 0 ):
 			startStr += f" { cntry.lower() }"
 
-		if ( len(grp) == 0 ) and ( len(cntry) > 0 ):
+		if ( useFollowingFlags ) and ( len(grp) == 0 ) and ( len(cntry) > 0 ):
 			startStr += f" { cty.lower() }"
 
 		print(f"buildConStr: {startStr.strip()}")
@@ -302,6 +383,7 @@ class TabConnections( tk.Frame ):
 		result = messagebox.askyesno(f"Confirm connection", f"Connect with:\n{strConnParams} ?")
 		if result:
 			print(f"continueMsg chose YES {result}")
+			nvpnT.addToConns(strConnParams)
 			return True
 		else: 
 			print(f"continueMsg chose NO {result}")
@@ -313,9 +395,12 @@ class TabConnections( tk.Frame ):
 		conStr = self.connectionConfig['selected']['cnnctnStr']
 		print(f"conStr from connectionConfig = {conStr}")
 		if self.continueMsg(conStr):
-			cnnRespArr = nvpnT.getNvpnItem("connect", [conStr] )
+			connectArr = [ value for value in conStr.split(' ') if value not in [ None, "", "\t", {}, [] ] ]
+			print(f"makeConnection| --connectArr: { connectArr }")
+			cnnRespArr = nvpnT.getNvpnItem("connect", connectArr )
 			print(f"makeConnection| --cnnRespArr: {cnnRespArr}")
-			time.sleep(2)
+			time.sleep(0.5)
+			nvpnT.addToConns( conStr )
 			self.doLayOut()
 		else:
 			print(f"User cancelled connection")
@@ -330,7 +415,7 @@ class TabConnections( tk.Frame ):
 		print(f"disConnect| --inputDialog.result: {inputDialog.result}")
 		nvpnReply = nvpnT.getNvpnItem("rate",inputDialog.result)
 		print(f"disConnect| --nvpnReply: {nvpnReply}")
-		time.sleep(2)
+		time.sleep(0.5)
 		self.doLayOut()
 
 
@@ -350,11 +435,22 @@ class TabConnections( tk.Frame ):
 		self.buildConStr()
 
 
-	def updateSelectedCountry( self , event ):
-		pickedCntry = ""
+	def updateSelectedCountry( self , event):
+		pickedCntry = "" 
 		if ( len( self.selectServerCountryLb.curselection() ) > 0 ):
 			pickedCntry = event.widget.get( self.selectServerCountryLb.curselection()[0] )
-		print(f"pickedCntry: { pickedCntry}")
+		print(f"updateSelectedCountry.pickedCntry: { pickedCntry}")
+		nvpnT.chosenCountryManager( 'set', pickedCntry )
+		self.tabConnSelCntryLbl.configure( text = pickedCntry )
+		self.connLB_CtyVar.set( nvpnT.cityListManager('get'))
+		self.buildConStr()
+
+
+	def updateSelectedLastConn(self, event ):
+		pickedCntry = "" 
+		if ( len( self.selectLastConnLb.curselection() ) > 0 ):
+			pickedCntry = event.widget.get( self.selectLastConnLb.curselection()[0] )
+		print(f"updateSelectedLastConn.pickedCntry: { pickedCntry}")
 		nvpnT.chosenCountryManager( 'set', pickedCntry )
 		self.tabConnSelCntryLbl.configure( text = pickedCntry )
 		self.connLB_CtyVar.set( nvpnT.cityListManager('get'))
@@ -459,10 +555,23 @@ class TabConnections( tk.Frame ):
 		else:
 			self.connLB_CtyVar.set([])
 
+		# Last Connections
+		print(f"lastConnections: { len( nvpnT.allConsArr) }")
+		if len( nvpnT.allConsArr) == 0:
+			self.connLB_ConnsVar.set([])
+		else:
+			if len( nvpnT.allConsArr) >= 3:
+				self.connLB_ConnsVar.set( nvpnT.allConsArr[0:3] )
+			else:
+				self.connLB_ConnsVar.set( nvpnT.allConsArr )
+
 
 		self.tabConnDisConnectBtn.grid(row = 0, column = 0, columnspan = 1 )
 		self.tabConnSelectionsConnStrBtn.grid( row = 0, column = 1, columnspan = 1 )
 
+		self.refreshConnStatus()
+
 		# Finalle draw the class grid frame
 		self.tabConnGridFrame.grid( row = 0, column = 0 ) # , sticky = 'WENS' 
+
 		print(f"TabConnections End of doLayOut")

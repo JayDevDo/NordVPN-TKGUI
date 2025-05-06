@@ -2,9 +2,14 @@
 
 ########################################
 #### 	nvpnSettingsCommands.py 	####
-#### 	Version 241228_2000 grid	####
+#### 	Version 20250506 	grid	####
 ########################################
 
+"""
+	Because nordvpn displays settings differently from the setting-item being used.
+	The 'item' is nordvpn display value
+	The 'value' is what we use to change the setting.
+"""
 
 nvpnCommandsArray = [
 	{ 
@@ -16,28 +21,33 @@ nvpnCommandsArray = [
 		'value': "lan-discovery"
 	},
 	{ 
+		'item':"VIRTUAL_LOCATION",
+		'value': "virtual-location"
+	},
+	{ 
 		'item':"POST-QUANTUM_VPN",
 		'value': "pq"	
 	}
 ]
 
 """
-With version NordVPN Version 3.19.2
-
-Technology: NORDLYNX
-Firewall: enabled
-Firewall Mark: 0xe1f1
-Routing: enabled
-Analytics: disabled
-Kill Switch: disabled
-Threat Protection Lite: disabled
-Notify: disabled
-Tray: disabled
-Auto-connect: disabled
-IPv6: disabled
-Meshnet: disabled
-DNS: disabled
-LAN Discovery: disabled
-Virtual Location: enabled
-Post-quantum VPN: disabled
+	With version NordVPN Version 3.20
+	=================================
+	Technology: NORDLYNX
+	Firewall: enabled
+	Firewall Mark: 0xe1f1
+	Routing: enabled
+	Analytics: disabled
+	Kill Switch: disabled
+	Threat Protection Lite: disabled
+	Notify: disabled
+	Tray: disabled
+	Auto-connect: disabled
+	IPv6: disabled
+	Meshnet: disabled
+	DNS: disabled
+	LAN Discovery: disabled
+	Virtual Location: enabled
+	Post-quantum VPN: disabled
+	=================================
 """

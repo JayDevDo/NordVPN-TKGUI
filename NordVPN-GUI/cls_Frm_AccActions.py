@@ -2,7 +2,7 @@
 
 ############################################
 #### 		cls_Frm_AccActions.py 		####
-#### 		Version 241228_2000 grid	####
+#### 		Version 20250506 	grid	####
 ############################################
 
 import tkinter as tk
@@ -20,7 +20,6 @@ import json
 import subprocess
 import psutil
 import asyncio
-
 
 """ 
 	--------------------
@@ -46,8 +45,6 @@ import asyncio
 		-> When already logged in the result is "You are already logged in."
 		-> If not logged in, the result contains an url that we launch off the cmmand line.
 """
-
-
 
 global extAuthStarted
 extAuthStarted = False

@@ -2,9 +2,8 @@
 
 ########################################
 #### 	cls_tabFrm_Settings.py 		####
-#### 	Version 241228_2000 grid	####
+#### 	Version 20250506 	grid	####
 ########################################
-
 
 import tkinter as tk
 from tkinter import messagebox

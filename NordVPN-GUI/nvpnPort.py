@@ -2,7 +2,7 @@
 
 ############################################
 #### 		nvpnPort.py 				####
-#### 		Version 241228_2000 grid	####
+#### 		Version 20250506 	grid	####
 ############################################
 
 import sys
@@ -73,11 +73,17 @@ nordVPNChosenServer = ""
 # Eventually the serverlist will be taken from the server and not stored as json.
 jsonSrvrFile = os.path.join( jsonPath, "servers.json")
 
+
 global connStatusArr
 global connStatus
 connStatusArr = []
 connStatus = False
 jsonSttsFile = os.path.join( jsonPath, "status.json")
+
+
+global allConsArr
+allConsArr = []
+allConnsPath = os.path.join( jsonPath, "allConns.json" )
 
 
 def nordProcesses():
@@ -105,16 +111,6 @@ def nordProcesses():
 
 	# as of 6.0 psutil.process_iter.cache_clear()
 	return ( glbl_serviceActive, glbl_loginStatus )
-
-
-def nordPortSubP( cmdArgs ):
-	try:
-		out = subprocess.check_output( cmdArgs, stderr= subprocess.STDOUT ).decode('utf-8')
-	except subprocess.CalledProcessError as e:
-		print (f"[ERROR]: Exit code != 0: {e}")
-		out = e.output.decode()
-	finally:
-		return out
 
 
 def nordPort( cmdArgs:[] ):
@@ -198,13 +194,13 @@ def commandRouter( item, optVars=[] ):
 
 
 def getNvpnItem( item, optVars=[] ):
-	global nordVPNGroupList, 	nordVPNChosenGroup
-	global nordVPNCountryList, 	nordVPNChosenCountry 
-	global nordVPNCityList, 	nordVPNChosenCity, 		jsonCtyFile
-	global connStatusArr, 		connStatus
+	global nordVPNGroupList, nordVPNChosenGroup
+	global nordVPNCountryList, nordVPNChosenCountry 
+	global nordVPNCityList, nordVPNChosenCity, jsonCtyFile
+	global connStatusArr, connStatus
 
-	termRetVal 			= []
-	nvpnTnnlResponse  	= []
+	termRetVal = []
+	nvpnTnnlResponse = []
 
 	try:
 		itemSupported 	= ( item in nordVPNCommandOptions )
@@ -212,7 +208,6 @@ def getNvpnItem( item, optVars=[] ):
 		if item == "account" :
 			rawAccsResponse  = commandRouter( item="account" )
 			nvpnTnnlResponse = handleResponseTuples( rawAccsResponse )
-
 			# print(f"getNvpnItem - at End of --ACCOUNT-- nvpnTnnlResponse: { str( nvpnTnnlResponse ) }")
 
 		#==================================================================================================================================
@@ -238,7 +233,6 @@ def getNvpnItem( item, optVars=[] ):
 			print(f"getNvpnItem: at Start of --CONNECT-- \n optvars: { str(optVars) }")
 			rawConnectResponse 	= commandRouter( item="connect" , optVars=optVars )
 			nvpnTnnlResponse = handleResponseStrings( rawConnectResponse )
-
 			print(f"getNvpnItem: at End of --CONNECT-- nvpnTnnlResponse: { str( nvpnTnnlResponse ) }")
 		
 		#==================================================================================================================================
@@ -377,7 +371,7 @@ def getNvpnItem( item, optVars=[] ):
 		#==================================================================================================================================
 
 	except Exception as e:
-		print(f"Exception= {e}")
+		print(f"getNvpnItem Exception= {e}")
 
 
 	finally:
@@ -406,6 +400,9 @@ def getSetting( setting:str ):
 
 
 def getAllItems():
+	"""
+		Only used in testing commandrouter results
+	"""
 	nordVPNCountryList = []
 	for nvpnCmd in nordVPNCommandOptions:
 		if nvpnCmd == "logout":
@@ -446,13 +443,9 @@ def handleResponseTuples( nvpnResponse ):
 # For treating groups, countries, cities
 def handleResponseArrays( nvpnResponse ):
 	# print(f"handleResponseArrays nvpnResponse: { str(nvpnResponse) }")
-
 	treatedArray = []
-
 	try:
-
 		for i, entry in enumerate( nvpnResponse ):
-
 			tmpSplitEntry =  [ value for value in entry.replace( '\t', ',' ).split(',') if value not in [ None, "", "\t", {}, [] ]  ]
 			treatedArray += tmpSplitEntry
 
@@ -492,7 +485,6 @@ def cleanCityResponse( nvpnResponse ):
 
 	else:
 		print(f"cleanCityResponse: type unknown =  { type( nvpnResponse ) }")
-
 
 	# print(f"\n\ncleanCityResponse: after clean =  { json.dumps( newCleanArray, indent = 4 ) }\n\n")
 	#nordVPNCityList = newCleanArray
@@ -552,6 +544,7 @@ def countryListManager( action:str , filterStr="" ):
 
 
 def chosenCountryManager( action:str, newVal="" ):
+	print(f"chosenCountryManager { newVal }")
 	global nordVPNChosenCountry
 	if action == "get":
 		return nordVPNChosenCountry
@@ -673,6 +666,26 @@ def saveJson( fileName, data ):
 	fl.close()
 
 
+############################################################################
+# Connections HIS 
+def loadAllConns():
+	global allConsArr
+	allConsArr = loadJson( allConnsPath )
+	print(f"loadAllConns. allConsArr has { len( allConsArr ) } items.")	
+
+
+def addToConns(newCon):
+	global allConsArr
+
+	if newCon in allConsArr:
+		allConsArr.remove(newCon)
+	
+	allConsArr.insert( 0, newCon )
+	
+	if len(allConsArr) < 3:
+		saveJson( allConnsPath, allConsArr )
+	else:
+		saveJson( allConnsPath, allConsArr[-3:] )
 
 ############################################################################
 # App-Levels
