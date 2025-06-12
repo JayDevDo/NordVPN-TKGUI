@@ -2,7 +2,7 @@
 
 ########################################
 #### 	cls_tabFrm_Connections.py 	####
-#### 	Version 20250506 	grid	####
+#### 	Version 20250510 	grid	####
 ########################################
 
 import tkinter as tk
@@ -235,40 +235,45 @@ class TabConnections( tk.Frame ):
 			# tabConnActionsFrm( row = 0, column = 0 )
 			##########################################
 			
-			# row 0: Connect/disconnect buttons
-			self.tabConnActnsRw0 = tk.Frame(
+			#===============================================================================
+			# row 0: last connections listBox
+			self.tabConnLastConnsFrm = tk.LabelFrame(
 				self.tabConnActionsFrm,
-				bg = skin.myBlack 
+				text = "Last 3 Connections",
+				bg 	= skin.myBlack, 
+				fg 	= skin.myNGreen,
+				labelanchor = 'n',
+				borderwidth = 5,				
+				font = skin.provideFont(24) 
 			)
-			self.tabConnActnsRw0.grid( row = 0, column = 0, sticky = 'we' )
+			self.tabConnLastConnsFrm.grid( row = 0, column = 0, sticky = 'wens' )
+			
+			self.selectLastConnLb = tk.Listbox(
+				self.tabConnLastConnsFrm,
+				selectbackground= skin.myNGreen,
+				background 		= skin.myBlack,
+				foreground 		= skin.myLbxFG,
+				width 			= 32,
+				height 			= 4,
+				selectmode  	= 'single',
+				listvariable 	= self.connLB_ConnsVar,
+				font 			= skin.provideFont(14) )
+			self.selectLastConnLb.configure( exportselection = False )
+			self.selectLastConnLb.bind( "<<ListboxSelect>>", self.updateSelectedLastConn )
+			self.selectLastConnLb.grid( row = 0, column = 0, padx = 1, sticky = 'wens')
 
-			self.tabConnDisConnectBtn = tk.Button(
-				self.tabConnActnsRw0,
-				font = skin.provideFont(18),
-				bg 	= skin.myFalse, 
-				fg 	= skin.myWhite,
-				command = self.disConnect,
-				text = "Disconnect" 
-			)
-			self.tabConnDisConnectBtn.grid( row = 0, column = 0, sticky = 'we' )
-
-			self.tabConnSelectionsConnStrBtn = tk.Button(
-				self.tabConnActnsRw0,
-				bg 	= skin.myWhite, 
-				fg 	= skin.myBlack,
-				command = self.makeConnection,
-				font = skin.provideFont(15),
-				text = "nordvpn connect" 
-			)
-			self.tabConnSelectionsConnStrBtn.grid( row = 0, column = 1, sticky = 'we' )
-
-
+			#===============================================================================
 			# row 1: selected connection values ( [group] country [city] )
-			self.tabConnActnsRw1 = tk.Frame(
+			self.tabConnActnsRw1 = tk.LabelFrame(
 				self.tabConnActionsFrm,
-				bg = skin.myBlack 
+				text = "SELECTED:",
+				bg 	= skin.myBlack, 
+				fg 	= skin.myNBlue,
+				labelanchor = 'n',
+				borderwidth = 5,
+				font = skin.provideFont(24) 
 			)
-			self.tabConnActnsRw1.grid( row = 1, column = 0, sticky = 'we' )
+			self.tabConnActnsRw1.grid( row = 1, column = 0, rowspan = 2, sticky = 'wens' )
 
 			self.tabConnSelGrpLbl = tk.Label(
 				self.tabConnActnsRw1,
@@ -297,36 +302,39 @@ class TabConnections( tk.Frame ):
 			)
 			self.tabConnSelCtyLbl.grid( row = 0, column = 2 )
 
-			# row 2: last connections listBox
-			self.tabConnActnsRw2 = tk.Frame(
+			#===============================================================================
+			# row 3: Connect/disconnect buttons
+			self.tabConnActnsRw0 = tk.LabelFrame(
 				self.tabConnActionsFrm,
-				bg = skin.myBlack 
-			)
-			self.tabConnActnsRw2.grid( row = 2, column = 0, sticky = 'wes' )
-			
-			self.tabConnLastConnsFrm = tk.LabelFrame(
-				self.tabConnActnsRw2,
-				text = "Last 3 Connections",
+				text = "ACTIONS:",
 				bg 	= skin.myBlack, 
-				fg 	= skin.myNGreen,
+				fg 	= skin.myNBlue,
 				labelanchor = 'n',
+				borderwidth = 5,
 				font = skin.provideFont(24) 
 			)
-			self.tabConnLastConnsFrm.grid( row = 0, column = 0, sticky = 'wens' )
-			
-			self.selectLastConnLb = tk.Listbox(
-				self.tabConnLastConnsFrm,
-				selectbackground= skin.myNGreen,
-				background 		= skin.myBlack,
-				foreground 		= skin.myLbxFG,
-				width 			= 24,
-				height 			= 4,
-				selectmode  	= 'single',
-				listvariable 	= self.connLB_ConnsVar,
-				font 			= skin.provideFont(14) )
-			self.selectLastConnLb.configure( exportselection = False )
-			self.selectLastConnLb.bind( "<<ListboxSelect>>", self.updateSelectedLastConn )
-			self.selectLastConnLb.grid( row = 0, column = 0, padx = 1, sticky = 'n')
+			self.tabConnActnsRw0.grid( row = 3, column = 0, sticky = 'wens' )
+
+			self.tabConnDisConnectBtn = tk.Button(
+				self.tabConnActnsRw0,
+				font = skin.provideFont(18),
+				bg 	= skin.myFalse, 
+				fg 	= skin.myWhite,
+				command = self.disConnect,
+				text = "Disconnect" 
+			)
+			self.tabConnDisConnectBtn.grid( row = 0, column = 0, sticky = 'nw' )
+
+			self.tabConnSelectionsConnStrBtn = tk.Button(
+				self.tabConnActnsRw0,
+				bg 	= skin.myWhite, 
+				fg 	= skin.myBlack,
+				command = self.makeConnection,
+				font = skin.provideFont(15),
+				text = "nordvpn connect" 
+			)
+			self.tabConnSelectionsConnStrBtn.grid( row = 0, column = 1, sticky = 'ne' )
+
 
 
 		self.doLayOut()

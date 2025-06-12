@@ -2,7 +2,7 @@
 
 ########################################
 #### 	NordVPNTKGUI.py 			####
-#### 	Version 20250506 	grid	####
+#### 	Version 20250612 	grid	####
 ########################################
 
 import tkinter as tk
@@ -19,7 +19,7 @@ appHeight 	= appSize[1]
 
 # nordVpnVersion is the nordvpn version which was used to build this app. Works 100% on mx-linux debian bookwurm
 global nordVpnVersion
-nordVpnVersion = "3.20.0"
+nordVpnVersion = "3.20.3"
 # Is nordvpn present on the system?
 nvpnVersionCurrent = nvpnT.getNvpnItem('version')
 print(f"NordVPNTKGUI | --nvpnVersionCurrent: { nvpnVersionCurrent }")
