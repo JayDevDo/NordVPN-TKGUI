@@ -2,7 +2,7 @@
 
 ########################################
 #### 	NordVPNTKGUI.py 			####
-#### 	Version 20250612 	grid	####
+#### 	Version 20250620 	grid	####
 ########################################
 
 import tkinter as tk
@@ -19,37 +19,8 @@ appHeight 	= appSize[1]
 
 # nordVpnVersion is the nordvpn version which was used to build this app. Works 100% on mx-linux debian bookwurm
 global nordVpnVersion
-nordVpnVersion = "3.20.3"
-# Is nordvpn present on the system?
-nvpnVersionCurrent = nvpnT.getNvpnItem('version')
-print(f"NordVPNTKGUI | --nvpnVersionCurrent: { nvpnVersionCurrent }")
-
-if ( len( nvpnVersionCurrent ) == 2 ) and ( len( nvpnVersionCurrent[1] ) > 0 ):
-
-	print(f"NordVPNTKGUI | comparing versions: { nvpnVersionCurrent[1] } - { nordVpnVersion }")
-
-	if( nordVpnVersion ==  nvpnVersionCurrent[1].split(' ')[-1] ):
-		print(f"NordVPNTKGUI | comparing versions: SAME ")
-
-	elif( nordVpnVersion[0:-2] in nvpnVersionCurrent[1] ):
-		
-		msgInfoTxt = f"NordVPNTKGUI | comparing versions: SAME-ISH {nordVpnVersion[0:-2]}"
-
-		if nvpnVersionCurrent[1].split(' ')[-1] > nordVpnVersion:
-			msgInfoTxt = f"NordVPNTKGUI | comparing versions: SAME-ISH\nRunning: {nvpnVersionCurrent[1].split(' ')[-1] }\nNeeded: {nordVpnVersion}.\nIt might work !"
-		else:
-			msgInfoTxt = f"NordVPNTKGUI | comparing versions: SAME-ISH\nRunning: {nvpnVersionCurrent[1].split(' ')[-1] }\nNeeded: {nordVpnVersion}.\nIt might work !"
-
-		print(f"{msgInfoTxt}")
-		messagebox.showinfo(msgInfoTxt.split('|')[0],msgInfoTxt.split('|')[1][1:])
-
-
-else:
-	print(f"NordVPNTKGUI | nvpnVersionCurrent len not 2 or no info in nvpnVersionCurrent[1]")
-	cannotWorkWithoutNordvpn = messagebox.showerror( "NordVPN GUI (Tk)", f"This app needs nordvpn to be installed with at least version {nordVpnVersion}")
-	if cannotWorkWithoutNordvpn:
-		exit(1)
-
+nordVpnVersion = "4.0.0"
+# 4.0.0 should work with nordvpn-gui 2.0 (official GUI, with limited settings, and NO meshnet )
 
 # First get the status of nordvpn services/processes. This will set the globals:  --glbl_serviceActive and --glbl_loginStatus
 curStatus = nvpnT.nordProcesses()
@@ -133,7 +104,9 @@ notebook = ttk.Notebook(
 	mwFrameGrid, 
 	width 	= nbDimensions[0], 
 	height 	= nbDimensions[1], 
-	style 	= 'Jays.TNotebook')
+	style 	= 'Jays.TNotebook'
+	)
+
 notebook.grid(
 	row 	= 0,
 	column 	= 0, 
@@ -164,10 +137,21 @@ notebook.add( tab_Connect, text = 'Connection' )
 # tab SETTINGS START
 from cls_tabFrm_Settings import TabSettings
 tab_Settings = TabSettings( notebook , dimensions = tabDimensions )
-tab_Settings.grid( row = 0, column = 0, sticky = 'N' )
+# tab_Settings.grid( row = 0, column = 0, sticky = 'N' )
 # , sticky = 'WENS' 
 notebook.add( tab_Settings, text = 'Settings')
 # End of tab SETTINGS
+
+
+# tab DEVICES START
+from cls_tabFrm_Meshnet import TabMeshDevices
+tab_Devices = TabMeshDevices( notebook, dimensions = tabDimensions )
+# tab_Devices.grid( row = 0, column = 0, sticky = 'N' )
+notebook.add( tab_Devices, text = 'Devices')
+# End of tab DEVICES 
+
+
+
 """
 """
 

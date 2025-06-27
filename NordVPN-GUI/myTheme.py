@@ -10,21 +10,20 @@ import tkinter as tk
 from tkinter import font as tkFont
 
 # App globals
-global baseDir 
+global baseDir
 baseDir = os.path.abspath( os.path.dirname(__file__) )
 
 # logo
 global logoPathStr
-logoPathStr =  os.path.join( baseDir, "img", "nordVPNLogo180x50.png" )
+logoPathStr =  os.path.join( baseDir, "img", "linux-big.png" )
 
 global icoPath
-icoPath =  os.path.join( baseDir, "img", "nordvpn.png" )
-# ! Make/get a better png logo / icon file
+icoPath =  os.path.join( baseDir, "img", "linux-big.png" )
 
 def logoPath():
 	return logoPathStr
 
-# Create fonts 
+# Create fonts
 def provideFont( size = "N" ):
 	mySmallFont = tkFont.Font( family="Arial", size=10, weight=tkFont.NORMAL )
 	myNormalFont= tkFont.Font( family="Arial", size=12, weight=tkFont.NORMAL )
@@ -55,9 +54,6 @@ def provideFont( size = "N" ):
 ##################################################
 # TK:
 
-myTrue 	= "#AAFF55"
-myFalse = "#FF3232"
-
 # Buttons
 myBttnBG = "#0032B4"
 myBttnFG = "#B4FF7D"
@@ -73,6 +69,10 @@ myLbxFG = "#B4FF7D"
 # Absolutes
 myWhite = "#FFFFFF"
 myBlack = "#000000"
+
+myTrue 	= "#AAFF55"
+myFalse = "#FF3232"
+
 
 # Blues
 myLBlue = "#96C8FF"
@@ -94,58 +94,7 @@ myLYellow = "#FFFF28"
 myNYellow = "#FFFF55"
 myDYellow = "#FFFF7D"
 
-# reds
+# Reds
 myDRed 	= "#FA3232"
 myNRed 	= "#FA4B64"
 myLRed 	= "#FA9696"
-
-
-##################################################
-# WX:
-
-"""
-myTrue 	= wx.Colour( 170, 255,  85 )
-myFalse = wx.Colour( 255,  50,  50 )
-
-# Buttons
-myBttnBG = wx.Colour(  0,  50, 180 )
-myBttnFG = wx.Colour(180, 255, 125 )
-
-# Labels
-myLblBG = wx.Colour(  0,  50, 180 )
-myLblFG = wx.Colour(180, 255, 125 )
-
-# ListBoxes/choices
-myLbxBG = wx.Colour(  0,  50, 180 )
-myLbxFG = wx.Colour(180, 255, 125 )
-
-# Absolutes
-myWhite = wx.Colour(255, 255, 255 )
-myBlack = wx.Colour(  0,   0,   0 )
-
-# Blues
-myLBlue = wx.Colour( 150, 200, 255 )
-myNBlue = wx.Colour(  50, 155, 255 )
-myDBlue = wx.Colour(   0, 125, 255 )
-
-# Greens
-myLGreen= wx.Colour(  0, 255, 125 )
-myNGreen= wx.Colour(  0, 210, 125 )
-myDGreen= wx.Colour(  0, 170, 125 )
-
-# Greys
-myLGrey = wx.Colour(224, 224, 224 )
-myNGrey = wx.Colour(112, 112, 112 )
-myDGrey = wx.Colour( 56,  56,  56 )
-
-# Yellows
-myLYellow = wx.Colour(255, 255,  40 )
-myNYellow = wx.Colour(255, 255,  85 )
-myDYellow = wx.Colour(255, 255, 125 )
-
-# reds
-myDRed 	= wx.Colour( 250,  50,  50 )
-myNRed 	= wx.Colour( 250,  75, 100 )
-myLRed 	= wx.Colour( 250, 150, 150 )
-
-"""

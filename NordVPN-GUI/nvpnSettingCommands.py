@@ -28,9 +28,9 @@ nvpnCommandsArray = [
 		'item':"POST-QUANTUM_VPN",
 		'value': "pq"	
 	},
-	{
+	{ 
 		'item':"AUTO-CONNECT",
-		'value': "autoconnect"		
+		'value': "autoconnect"	
 	}
 ]
 
