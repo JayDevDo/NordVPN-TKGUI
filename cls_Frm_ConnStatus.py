@@ -6,7 +6,6 @@
 ########################################
 
 import tkinter as tk
-from tkinter import ttk
 import myTheme as skin
 import nvpnPort as nvpnT
 from myTable import TkTable as connStatusTbl
@@ -23,7 +22,6 @@ class ConnStatusFrame( tk.Frame ):
 		super().__init__(master)
 	
 		self.master = master
-		self.configure( background = skin.myBlack )
 		self.grid()
 		self.dimensions = dimensions
 		print(f"ConnStatusFrame called with dimensions: { dimensions }")
@@ -52,8 +50,7 @@ class ConnStatusFrame( tk.Frame ):
 			pubMsg = f"{ self.connStatArray[0][1] } - { self.connStatArray[1][1] } - { self.connStatArray[-1][1] }"  
 			pub.sendMessage( "myStatusBarUpdate", anyArgs=f"Connection status: { pubMsg }" )
 		else:
-			print(f"nvpnT.getRatingResult() = {nvpnT.getRatingResult()}")
-			pubMsg = f"{ self.connStatArray[0][1] }" + f"{ nvpnT.getRatingResult() }"
+			pubMsg = f"{ self.connStatArray[0][1] }"  
 
 		self.doLayout()
 
@@ -81,18 +78,15 @@ class ConnStatusFrame( tk.Frame ):
 			dimensions 	= [ self.dimensions[0] , self.dimensions[1] ]
 		)
 
-		self.refreshImage = skin.provideImage('refresh')
 		self.btn_Refresh = tk.Button(
 			self.tabConnStatGridFrame,
 			text = "Refresh status", 
-			command = self.refreshData,
 			font = skin.provideFont("B"), 
-			background = skin.myBttnBG, 
+			bg = skin.myBttnBG, 
 			fg = skin.myBttnFG, 
 			padx = 10,
 			pady = 10,
-			image = self.refreshImage,
-			compound = 'left'
+			command = self.refreshData
 		)
 
 		self.connStatHeader.grid( row = 0, 	column = 0, sticky = 'WENS' )

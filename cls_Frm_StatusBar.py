@@ -6,9 +6,14 @@
 ########################################
 
 import tkinter as tk
+from tkinter import messagebox
+import json
 from datetime import datetime
 from pubsub import pub
+
 import myTheme as skin
+import nvpnPort as nvpnT
+
 
 class MyStatusBar( tk.Frame ):
 
@@ -20,7 +25,7 @@ class MyStatusBar( tk.Frame ):
 	
 		super().__init__( master )
 	
-		# print(f"MyStatusBar called with dimensions: { dimensions }")
+		print(f"MyStatusBar called with dimensions: { dimensions }")
 
 		self.master = master
 		self.configure( background = skin.myBlack )

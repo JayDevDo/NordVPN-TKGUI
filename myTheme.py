@@ -8,10 +8,7 @@
 import os
 import tkinter as tk
 from tkinter import font as tkFont
-
 from cairosvg import svg2png
-from PIL import Image
-from PIL import ImageTk
 
 
 # App globals
@@ -22,9 +19,6 @@ baseDir = os.path.abspath( os.path.dirname(__file__) )
 global logoPathStr
 logoPathStr =  os.path.join( baseDir, "img", "linux-big.png" )
 print(f"myTheme | logoPathStr exists? { os.path.isfile( logoPathStr ) } ")
-
-global iconSize
-iconSize = (32,32)
 
 global icoPath
 icoPath =  os.path.join( baseDir, "img", "linux-big.png" )
@@ -48,8 +42,7 @@ def convertToPNG( svgName ):
 	pngName = os.path.join( inAppIconsPath, f"{svgName}.png" )
 
 	if os.path.exists( pngName ):
-		pass
-		# print(f"myTheme | convertToPNG --svgName: { svgName } = { srcName }\nexists already as\n{ pngName }" )
+		print(f"myTheme | convertToPNG --svgName: { svgName } = { srcName }\nexists already as\n{ pngName }" )
 	else:
 		if os.path.exists( srcName ):
 			svg_code = open( srcName, 'rt').read()
@@ -58,57 +51,14 @@ def convertToPNG( svgName ):
 	return pngName
 
 
-def iconPath( iconName="close" ):
-	pngName = os.path.join( inAppIconsPath, f"{iconName}.png" )
-	if os.path.isfile( pngName ):
-		return pngName
+
+def iconPath( iconName="pan-down-symbolic"):
+	retValPath = convertToPNG( iconName )
+	print(f"returning iconPath: { retValPath }")
+	if os.path.isfile(retValPath):
+		return retValPath
 	else:
-		# Once all png's are created this can be deleted
-		retValPath = convertToPNG( iconName )
-		print(f"returning iconPath: { retValPath }")
-		if os.path.isfile(retValPath):
-			return retValPath
-		else:
-			print(f"Did NOT find {retValPath} returning 'pan-down-symbolic.png' ")
-			return os.path.join( inAppIconsPath, "close.png" )
-
-
-
-def iconifyImage( imagePath ):
-	global iconSize
-	retObj = {}
-	imgIcon = Image.open( imagePath )
-	try:
-		imgIcon = imgIcon.resize( iconSize, Image.Resampling.LANCZOS )
-
-	except AttributeError as e:
-		# AttributeError: module 'PIL.Image' has no attribute 'Resampling'	
-		# depends on active PIL version.	
-		print(f"iconifyImage ! AttributeError: {e}")
-		imgIcon = Image.open( imagePath )
-		imgIcon = imgIcon.resize( iconSize, Image.ANTIALIAS )
-
-	finally:
-		return ImageTk.PhotoImage( imgIcon )
-
-
-def provideImage(imageName):
-	imgPath = iconPath(imageName)
-	returnImage = iconifyImage( imgPath )
-	return returnImage
-
-# To keep track of icons used.
-# When all png's are created, cairosvg and PIL can be removed from libs used
-allIconsArray = [
-	"user_gear",
-	"vpn-symbol",
-	"gear",
-	"network-wired",
-	"refresh",
-	"close",
-	"filter"
-	# ,	,	"caret-down",	"filter",	"pan-down-symbolic"
-]
+		return os.path.join( inAppIconsPath, "arrow-rotate-left.png" )
 
 
 # Create fonts

@@ -111,8 +111,7 @@ class TabConnections( tk.Frame ):
 				bg 		= skin.myBlack,
 				fg 		= skin.myLGreen,
 				text 	= "Reset group",
-				command = self.clearSelectedGroup
-			)
+				command = self.clearSelectedGroup)
 			self.tabConnGroupClearBtn.grid( row = 1, column = 0, padx = 2 )
 
 
@@ -136,7 +135,7 @@ class TabConnections( tk.Frame ):
 				background 		= skin.myBlack,
 				foreground 		= skin.myLbxFG,
 				width 			= 24,
-				height 			= 9,
+				height 			= 8,
 				selectmode  	= 'single',
 				listvariable 	= self.connLB_CntrVar,
 				font 			= skin.provideFont(14) )
@@ -144,21 +143,27 @@ class TabConnections( tk.Frame ):
 			self.selectServerCountryLb.bind( "<<ListboxSelect>>", self.updateSelectedCountry )
 			self.selectServerCountryLb.grid( row = 0, column = 0, padx = 1, sticky = 'n')
 
+			self.tabConnCountryClearBtn = tk.Button(
+				self.tabConnCountryFrm,
+				font  	= skin.provideFont("B"),
+				bg 		= skin.myBlack,
+				fg 		= skin.myLGreen,
+				text 	= "Reset country (+filter)",
+				command = self.clearSelectedCountry )
+			self.tabConnCountryClearBtn.grid( row = 1, column = 0 )
+
 			self.tabConnFltrCnt = tk.Frame( 
 				self.tabConnCountryFrm, 
-				bg = skin.myBlack 
-			)
+				bg = skin.myBlack )
 			self.tabConnFltrCnt.grid( row = 2, column = 0 )
 
-			self.fltrImage = skin.provideImage('filter')
-			self.fltrIconDisplay = tk.Button(
+			self.connCntrFltrLbl = tk.Label(
 				self.tabConnFltrCnt,
-				# fg 		= skin.myBlack,
-				bg 		= skin.myLGreen,
-				image 	= self.fltrImage,
-				compound = 'left'
-			)
-			self.fltrIconDisplay.grid( row = 0, column = 0 )
+				text 	= "Filter:",
+				bg 		= skin.myBlack,
+				fg 		= skin.myLGrey,
+				font 	= skin.provideFont("B") )
+			self.connCntrFltrLbl.grid( row = 0, column = 0 )
 
 			self.connCntrFilterTxt = tk.Entry(
 				self.tabConnFltrCnt,
@@ -166,21 +171,8 @@ class TabConnections( tk.Frame ):
 				fg 		= skin.myLGrey,
 				width 	= 10,
 				font 	= skin.provideFont("B"),
-				textvariable = self.connFltrStrVar 
-			)
+				textvariable = self.connFltrStrVar )
 			self.connCntrFilterTxt.grid( row = 0, column = 1 )
-
-			self.clearFltrImage = skin.provideImage('clear-filter')
-			self.tabConnCountryClearBtn = tk.Button(
-				self.tabConnFltrCnt,
-				# fg 		= skin.myBlack,
-				bg 		= skin.myLRed,
-				# text 	= "Reset country (+filter)",
-				command = self.clearSelectedCountry,
-				image = self.clearFltrImage,
-				compound = 'left' 
-			)
-			self.tabConnCountryClearBtn.grid( row = 0, column = 2 )
 
 
 		#==============================================================
@@ -399,6 +391,7 @@ class TabConnections( tk.Frame ):
 		result = messagebox.askyesno(f"Confirm connection", f"Connect with:\n{strConnParams} ?")
 		if result:
 			print(f"continueMsg chose YES {result}")
+			nvpnT.addToConns(strConnParams)
 			return True
 		else: 
 			print(f"continueMsg chose NO {result}")
@@ -416,7 +409,6 @@ class TabConnections( tk.Frame ):
 			cnnRespArr = nvpnT.getNvpnItem("connect", connectArr )
 			print(f"makeConnection| --cnnRespArr: { cnnRespArr }")
 			nvpnT.addToConns( conStr )
-			self.connLB_ConnsVar.set(nvpnT.allConsArr)
 			self.refreshConnStatus()
 		else:
 			print(f"User cancelled connection")

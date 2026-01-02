@@ -40,18 +40,15 @@ class TabSettings( tk.Frame ):
 		self.grid()
 		print(f"tabFrmSettings| --dimensions: {dimensions}")
 		self.dimensions = dimensions
-
-		self.refrBttnImg = skin.provideImage('refresh')		
+		
 		self.tabSttngs_Refresh_bttn = tk.Button(
 			self,
 			text = "Refresh Settings", 
 			command = self.getLiveSettings,
-			bg = skin.myNGreen,
-			fg = skin.myBlack,
-			font = skin.provideFont("B"),
-			image = self.refrBttnImg,
-			compound = 'left'
-		)
+			bg = "#000000",
+			fg = "#00FF00",
+			font = skin.provideFont("B")
+		)		
 
 		self.tabSttngs_GridFrm = tk.LabelFrame(
 			self, 

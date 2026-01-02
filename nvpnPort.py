@@ -86,10 +86,6 @@ allConsArr = []
 allConnsPath = os.path.join( jsonPath, "allConns.json" )
 
 
-global disconnectRatingResponse
-disconnectRatingResponse = ["",""]
-
-
 def nordProcesses():
 	"""  
 		Nordprocesses are:
@@ -202,7 +198,6 @@ def getNvpnItem( item, optVars=[] ):
 	global nordVPNCountryList, nordVPNChosenCountry 
 	global nordVPNCityList, nordVPNChosenCity, jsonCtyFile
 	global connStatusArr, connStatus
-	global disconnectRatingResponse
 
 	termRetVal = []
 	nvpnTnnlResponse = []
@@ -260,7 +255,6 @@ def getNvpnItem( item, optVars=[] ):
 		elif item == "disconnect" :
 			rawDisCnnctResponse = commandRouter( item="disconnect" )
 			nvpnTnnlResponse = handleResponseStrings( rawDisCnnctResponse )
-			disconnectRatingResponse[0] = nvpnTnnlResponse
 
 			# print(f"getNvpnItem - at End of --DISCONNECT-- nvpnTnnlResponse: { str( nvpnTnnlResponse ) }")
 		
@@ -296,7 +290,7 @@ def getNvpnItem( item, optVars=[] ):
 
 		#==================================================================================================================================
 		elif item == "logout" :
-			rawLgoutResponse = commandRouter( item="logout" )
+			rawLgoutResponse 	= commandRouter( item="logout" )
 			nvpnTnnlResponse = rawLgoutResponse
 
 			print(f"getNvpnItem - at End of --LOGOUT-- nvpnTnnlResponse: { str( nvpnTnnlResponse ) }")
@@ -306,8 +300,7 @@ def getNvpnItem( item, optVars=[] ):
 			print(f"getNvpnItem: at Start of --RATING-- \n optvars: { str(optVars) }")
 			rawRatingResponse = commandRouter( item="rate", optVars=optVars )
 			nvpnTnnlResponse = handleResponseStrings( rawRatingResponse )
-			disconnectRatingResponse[1] = nvpnTnnlResponse
-			print(f"getNvpnItem disconnectRatingResponse now = { disconnectRatingResponse }")
+
 			print(f"getNvpnItem - at End of --RATING-- nvpnTnnlResponse: { str( nvpnTnnlResponse ) }")
 		
 		#==================================================================================================================================
@@ -695,14 +688,7 @@ def addToConns(newCon):
 	if len(allConsArr) < 3:
 		saveJson( allConnsPath, allConsArr )
 	else:
-		saveJson( allConnsPath, allConsArr[0:3] )
-
-
-def getRatingResult():
-	global disconnectRatingResponse
-	print(f"nvpnT | returning disconnectRatingResponse\n0 = { disconnectRatingResponse[0] }\n1 = { disconnectRatingResponse[0] }")
-	return f"{ str(disconnectRatingResponse) }"
-
+		saveJson( allConnsPath, allConsArr[-3:] )
 
 ############################################################################
 # App-Levels

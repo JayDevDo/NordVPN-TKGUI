@@ -23,7 +23,7 @@ from cls_Frm_StatusBar import MyStatusBar
 from cls_tabFrm_Account import TabAccount
 from cls_tabFrm_Connections import TabConnections
 from cls_tabFrm_Settings import TabSettings
-# from cls_tabFrm_Meshnet import TabMeshDevices
+from cls_tabFrm_Meshnet import TabMeshDevices
 
 global appSize
 appSize 	= [ 1100, 850 ]
@@ -34,6 +34,13 @@ appHeight 	= appSize[1]
 global nordVpnVersion
 nordVpnVersion = "4.0.0"
 # 4.0.0 should work with nordvpn-gui 2.0 (official GUI, with limited settings, and NO meshnet )
+
+
+def iconifyImage( imagePath ):
+	imgIcon = Image.open( imagePath )
+	imgIcon = imgIcon.resize( iconSize ) # , Image.ANTIALIAS
+	return ImageTk.PhotoImage( imgIcon )
+
 
 # First get the status of nordvpn services/processes. This will set the globals:  --glbl_serviceActive and --glbl_loginStatus
 curStatus = nvpnT.nordProcesses()
@@ -136,43 +143,39 @@ notebook.grid( row = 0,	column = 0, pady = 5, padx = 5, sticky = 'N' )
 
 
 # tab ACCOUNT START 
-accImage = skin.provideImage('user_gear')
+tabAccountIconPath = skin.iconPath('user_gear')
+tabAccountImage = iconifyImage( tabAccountIconPath )
 tab_Account = TabAccount( notebook, dimensions = tabDimensions )
-notebook.add( tab_Account, text = 'Account', image = accImage, compound = "left" ) 
+notebook.add( tab_Account, text = 'Account', image = tabAccountImage, compound = "left" ) 
+
 # End of tab ACCOUNT
 
 # tab CONNECT START  connectdevelop
-connImage = skin.provideImage('vpn-symbol')
+tabConnectIconPath = skin.iconPath('vpn-symbol')
+tabConnectImage 	=  iconifyImage( tabConnectIconPath )
 tab_Connect = TabConnections( notebook, dimensions = tabDimensions )
-notebook.add( tab_Connect, text = 'Connection', image = connImage, compound = "left") 
+notebook.add( tab_Connect, text = 'Connection', image = tabConnectImage, compound = "left") 
+
 # End of tab CONNECT
 
 
 # tab SETTINGS START 'bars'
-sttngImage = skin.provideImage('gear')
+tabSettingsIconPath = skin.iconPath('gear')
+tabSettingsImage 	=  iconifyImage( tabSettingsIconPath )
 tab_Settings = TabSettings( notebook , dimensions = tabDimensions )
-notebook.add( tab_Settings, text = 'Settings', image = sttngImage, compound = "left" ) 
+notebook.add( tab_Settings, text = 'Settings', image = tabSettingsImage, compound = "left" ) 
+
 # End of tab SETTINGS
 
 
-"""
 # tab DEVICES START 
-########################################
-#### 	Meshnet to be discontinued 	####
-#### 	per 2025-12-01				####
-########################################
-
-
-deviceImage = skin.provideImage('network-wired')
+tabDevicesIconPath 	= skin.iconPath('network-wired')
+tabDevicesImage 	=  iconifyImage( tabDevicesIconPath )
 tab_Devices = TabMeshDevices( notebook, dimensions = tabDimensions )
-notebook.add( tab_Devices, text = 'Meshnet', image = deviceImage, compound = "left" ) 
+notebook.add( tab_Devices, text = 'Meshnet', image = tabDevicesImage, compound = "left" ) 
+
 # End of tab DEVICES 
 
-	elif selectedTabIndex == 3:
-		print(f"so far, no refresh needed for meshnet: { selectedTabIndex }")
-		# tab_Devices.
-
-"""
 """
 def updateConnStatusEverywhere( anyArgs ):
 	print(f"NordVPNTKGUI | updateConnStatusEverywhere: ")
@@ -205,6 +208,10 @@ def tabGotFocus( event ):
 
 	elif selectedTabIndex == 2:
 		tab_Settings.getLiveSettings()
+
+	elif selectedTabIndex == 3:
+		print(f"so far, no refresh needed for meshnet: { selectedTabIndex }")
+		# tab_Devices.
 
 	else:
 		print(f"unknown tabIndex: { selectedTabIndex }")

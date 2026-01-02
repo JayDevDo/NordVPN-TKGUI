@@ -52,8 +52,7 @@ class NordVPNServices( tk.Frame ):
 
 		print("SERVICES\t"*8)	
 		print(f"cls_Frm_Services.NordVPNServices| --dimensions: { dimensions }")
-		self.nvpnVersion = nvpnT.getNvpnItem('version')[1]
-		# [1].split(':')[1].strip()
+		self.nvpnVersion = nvpnT.getNvpnItem('version')[-1]
 
 		print(f"NordVPNServices| --self.nvpnVersion: { json.dumps( self.nvpnVersion, indent = 4 ) }" )
 

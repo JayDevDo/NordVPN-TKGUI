@@ -23,7 +23,6 @@ class AccountStatusFrame( tk.Frame ):
 		super().__init__( master )
 
 		self.master = master
-		self.configure( background = skin.myBlack )
 		self.grid()
 		
 		# print(f"AccountStatusFrame called with\n--dimensions: { dimensions }\n--accDataArr: { json.dumps( accDataArr, indent=4) }")
