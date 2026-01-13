@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-############################################
-#### 		nvpnMeshPort.py 			####
-#### 		Version 20250620 	grid	####
-############################################
+################################
+#### 	nvpnMeshPort.py 	####
+#### 	Version 20260109 	####
+################################
 
 import sys
 import os
@@ -84,18 +84,20 @@ meshCommandActions = [
 	"incoming",
 	"routing",
 	"local",
-	"fileshare"
+	"fileshare",
+	"auto-accept"
 ]
 
+#------------------------------------------------------------------------------
 def nordVPN_Device(args):
 	"""
 		Hostname and Nickname change place when Nickname is not "-"
 		Stores default device object
-			 = Hostname: jayvando-everest.nord
+			 = Hostname: 
 			 = Nickname: -
 			 = Status: disconnected
 			 = IP:
-			 = Public Key: 5sXghSLWHHejUXtRdji1sXs6fcOtxh1LT77ke81Emy0=
+			 = Public Key: 
 			 = OS: linux
 			 = Distribution: Linux Mint
 			 = Allow Incoming Traffic: enabled
@@ -110,11 +112,31 @@ def nordVPN_Device(args):
 	"""
 	retObj = {}
 	for l in args:
-		retObj[l.split(':')[0].lstrip()] = l.split(':')[1].lstrip()
+		if len( l.split(':') ) == 2:
+			retObj[l.split(':')[0].lstrip()] = l.split(':')[1].lstrip()
 	return retObj
 
 
+#------------------------------------------------------------------------------
+def meshNetOnLine():
+	retValBln = 0
+	try:
+		# tmpRetValStr = meshPort( [ "nordvpn", "meshnet", "peer", "list" ] )
+		# "It's not you, it's us. We're having trouble with our servers. If the issue persists, please contact our customer support."
+		tmpRetValStr = "It's not you, it's us. We're having trouble with our servers. If the issue persists, please contact our customer support."
+		
+		if len(tmpRetValStr) > 0:
+			tmpTestArr = tmpRetValStr.splitlines()
+			retValBln = (len(tmpTestArr)>0)
 
+	except Exception as e:
+		print(f"nvpnMeshT.meshNetOnLine ! Exception: {e}")
+		retValBln = False
+
+	finally:
+		return retValBln
+
+#------------------------------------------------------------------------------
 def meshPort( cmdArgs:[] ):
 	# print(f"nordPort: --cmdArgs: { str( cmdArgs ) }")
 	meshPortResp = []
@@ -134,7 +156,7 @@ def meshPort( cmdArgs:[] ):
 		return meshPortResp
 
 
-
+#------------------------------------------------------------------------------
 def meshCmndRouter( item, optVars=[] ):
 	# Here we translate the item into an array of command-strings
 	# print(f"meshCmndRouter called with item: { item } and optVars: { str( optVars ) }")
@@ -166,12 +188,18 @@ def meshCmndRouter( item, optVars=[] ):
 		return json.loads( json.dumps( npMeshResponse ) )
 
 
+#------------------------------------------------------------------------------
 def parseMeshPeerList( rawPeerList ):
-	print(f"parseMeshPeerList - rawPeerList len = { len( rawPeerList ) }")
-	tmpWorkArr 	= []
-	tmpRetArr = [ {}, {} , {} ]
-	tmpWorkArr = rawPeerList.splitlines()
+	# print(f"nvpnMeshT.parseMeshPeerList | --len(rawPeerList): { len( rawPeerList ) }")
+	# print(f"nvpnMeshT.parseMeshPeerList | --rawPeerList: { rawPeerList }")
 
+	tmpWorkArr 	= []
+	tmpRetArr = [ {}, [], [] ]
+	tmpWorkArr = rawPeerList.splitlines()
+	# print(f"nvpnMeshT.parseMeshPeerList | --tmpWorkArr: { json.dumps( tmpWorkArr, indent=4 ) }")
+	splitPeerList(tmpWorkArr)
+
+	# Initial thisDevice
 	thisDevice = {
 		'Hostname': 	"tmpWorkArr[lnNr+1].split(':')[1]",
 		'Nickname': 	"tmpWorkArr[lnNr+2].split(':')[1]",
@@ -192,7 +220,11 @@ def parseMeshPeerList( rawPeerList ):
 
 
 	if "This device:" in tmpWorkArr:
+		# The next x lines have this device's props
 		lnNrTD = tmpWorkArr.index("This device:")
+		prevLn = lnNrTD-1
+		# print(f"nvpnMeshT.parseMeshPeerList | --thisDevice setup --lnNrTD: {lnNrTD} --prevLn: {prevLn}")
+
 		thisNvpnDevice = {
 			'Hostname': 	tmpWorkArr[lnNrTD+1].split(':')[1].lstrip(),
 			'Nickname': 	tmpWorkArr[lnNrTD+2].split(':')[1].lstrip(),
@@ -211,7 +243,7 @@ def parseMeshPeerList( rawPeerList ):
 
 	if "Local Peers:" in tmpWorkArr:
 		lnNrLP = tmpWorkArr.index('Local Peers:')
-		print(f"parseMeshPeerList - Local Peers starts at -> { lnNrLP }")
+		# print(f"parseMeshPeerList - Local Peers starts at -> { lnNrLP }")
 		curLineNr = lnNrLP
 		tmpLclPeerArr = []
 
@@ -219,7 +251,7 @@ def parseMeshPeerList( rawPeerList ):
 			#  print(f"parseMeshPeerList. {curLineNr} peerLine = {peerLine}")
 
 			if "Hostname" in peerLine:
-				print(f"parseMeshPeerList. Found another Hostname at { curLineNr }")
+				# print(f"parseMeshPeerList. Found another Hostname at { curLineNr }")
 				newPeer = nordVPN_Device( tmpWorkArr[ curLineNr:(curLineNr+16) ] )
 				tmpLclPeerArr.append( newPeer )
 
@@ -238,7 +270,7 @@ def parseMeshPeerList( rawPeerList ):
 		if 'no peers' in tmpWorkArr[ lnNrEP + 1 ] :
 			print(f"parseMeshPeerList - NO External Peers")
 		else:
-			print(f"parseMeshPeerList - External Peers starts at -> { lnNrEP }")
+			# print(f"parseMeshPeerList - External Peers starts at -> { lnNrEP }")
 
 			curLineNrEP = lnNrEP
 			tmpExtPeerArr = []
@@ -247,7 +279,7 @@ def parseMeshPeerList( rawPeerList ):
 				# print(f"parseMeshPeerList. { curLineNrEP } extPeerLine = { extPeerLine }")
 
 				if "Hostname" in extPeerLine:
-					print(f"parseMeshPeerList. Found another External Hostname at { curLineNrEP }")
+					# print(f"parseMeshPeerList. Found another External Hostname at { curLineNrEP }")
 					newExtPeer = nordVPN_Device( tmpWorkArr[ curLineNr:(curLineNrEP+16) ] )
 					tmpExtPeerArr.append( newExtPeer )
 
@@ -259,26 +291,163 @@ def parseMeshPeerList( rawPeerList ):
 
 	return tmpRetArr
 
+#------------------------------------------------------------------------------
+def parseLocalPeers( lclPeerArr = [], peerType = "Local Device" ):
+	retArr = []
+	try:
+		# print(f"nvpnMeshT.parseLocalPeers | START --lclPeerArr: { lclPeerArr }")
+		# print(f"nvpnMeshT.parseLocalPeers | START --len(lclPeerArr): { len( lclPeerArr ) } has { lclPeerArr.count('') } empty lines")
+
+		for pr in range( 0, lclPeerArr.count('') ):
+			retArr.append( { 'lclPrNr': pr, 'prTp': peerType } )
+
+		curPeerNr = 0
+		for lineStr in lclPeerArr:
+			if lineStr == "":
+				curPeerNr += 1
+
+			if ":" in lineStr:
+				key, value = lineStr.split(':')
+				if value.strip() == "enabled":
+					retArr[curPeerNr][key] = True
+				elif value.strip() == "disabled":
+					retArr[curPeerNr][key] = False
+				else:
+					retArr[curPeerNr][key] = value.strip()
+		"""
+		"""
+
+	except Exception as e:
+		print(f"nvpnMeshT.parseLocalPeers ! Exception: { e }")
+
+	finally:
+		# print(f"nvpnMeshT.parseLocalPeers | FINALLY --retArr: { json.dumps( retArr, indent = 4 ) }")
+		return retArr
 
 
+#------------------------------------------------------------------------------
+def splitPeerList():
+	# print(f"nvpnMeshT.splitPeerList | START")
+	"""
+	# BETA BETA BETA
+	fileName = "/mnt/msiLT-Data/data_Desktop/python/beta/MSI/NordVPN-GUI/meshnet/meshnet-peer-list-raw.txt"
+	if os.path.exists( fileName ):
+		print(f"loadJson fileName {fileName} exists Yeay!")
+		fl = open( fileName )
+		peerListArr = fl.read()
+		fl.close()
+
+	# END BETA
+	"""
+	retArr = [ {}, [], [] ] # This device array, and local peers array
+	retArrTD = -1
+	retArrLD = -1
+	retArrED = -1
+	retArrDelims = []
+	peerListArr = []
+	rawPeerList = ""
+
+	rawPeerList = meshPort( [ "nordvpn", "meshnet", "peer", "list" ] )
+	print(f"nvpnMeshT.splitPeerList | --rawPeerList: {rawPeerList}")
+	if rawPeerList:
+		print(f"nvpnMeshT.splitPeerList | --rawPeerList CHECK: { 'trouble with our servers' in rawPeerList }")
+		# Output: It's not you, it's us. We're having trouble with our servers. If the issue persists, please contact our customer support.
+		if "trouble with our servers" in rawPeerList:
+			return retArr
+		else:
+			peerListArr = rawPeerList.splitlines()
+
+	try:
+		arrSize = len(peerListArr)
+		# print(f"nvpnMeshT.splitPeerList | --arrSize: {arrSize} --peerListArr: {peerListArr}")
+
+		for lNr, lStr in enumerate( peerListArr ):
+			# print(f"nvpnMeshT.splitPeerList | --lNr: {lNr} --lStr: {lStr}")
+			if "This device:" in lStr:
+				# print(f"nvpnMeshT.splitPeerList | line {lNr} of {arrSize} has This Device")
+				retArrTD = lNr
+
+			elif "Local Peers:" in lStr:
+				# print(f"nvpnMeshT.splitPeerList | line {lNr} of {arrSize} has This Device")
+				retArrLD = lNr
+
+			elif "External Peers:" in lStr:
+				# print(f"nvpnMeshT.splitPeerList | line {lNr} of {arrSize} has External Peers")
+				retArrED = lNr
+
+			elif len(lStr) == 0:
+				# print(f"nvpnMeshT.splitPeerList | line {lNr} of {arrSize} is empty")
+				retArrDelims.append(lNr)
+
+	except Exception as e:
+		print(f"nvpnMeshT.splitPeerList ! Exception: {e}")
+		return retArr
+
+	finally:
+		# print(f"nvpnMeshT.splitPeerList | FINALLY --retArrTD: {retArrTD} --retArrLD: {retArrLD} --retArrED: {retArrED} --retArrDelims {retArrDelims}")
+		# First split this in 3 parts: this,local,external
+		retArr[0] = parseLocalPeers( peerListArr[ retArrTD + 1 : retArrLD ] , "This Device")[0]
+		retArr[1] = parseLocalPeers( peerListArr[ retArrLD + 1 : retArrED - 1 ] , "Local Device" )
+		
+		if len( peerListArr[ retArrED + 1: ] ) > 0:
+			# print(f"nvpnMeshT.splitPeerList | FINALLY --External DeviceArray > 0: { peerListArr[ retArrED + 1: ] }" )
+			if "no peers" in peerListArr[ retArrED + 1: ]:
+				retArr[2] = []
+			else:
+				print(f"nvpnMeshT.splitPeerList | FINALLY DEAL WITH EXTERNAL PEERS" )
+
+		else:
+			print(f"nvpnMeshT.splitPeerList | FINALLY --External DeviceArray ELSE: { peerListArr[ retArrED + 1: ] }" )
+			retArr[2] = []
+
+		# print(f"nvpnMeshT.splitPeerList | FINALLY --This DeviceArray: { json.dumps( retArr[0], indent=4 ) }")
+		# print(f"nvpnMeshT.splitPeerList | FINALLY --Local DeviceArray: { json.dumps( retArr[1], indent=4 ) }")
+		# print(f"nvpnMeshT.splitPeerList | FINALLY --External DeviceArray: { json.dumps( retArr[2], indent=4 ) }")
+		return retArr
+
+#------------------------------------------------------------------------------
 def splitMeshRights( meshDevice ):
 	# print(f"nvpnMeshPort | splitMeshRights meshDevice: { json.dumps( meshDevice, indent = 2 ) }" )
-	thisDeviceRights = []
-	remotePeerRights = []
+	thisDeviceRights = {
+	    "Allow Incoming Traffic": None,
+	    "Allow Routing": None,
+	    "Allow Local Network Access": None,
+	    "Allow Sending Files": None,
+	    "Accept Fileshare Automatically": None
+	}
+	remotePeerRights = {
+	    "Allows Incoming Traffic": None,
+	    "Allows Routing": None,
+	    "Allows Local Network Access": None,
+	    "Allows Sending Files": None,	
+	}
 
 	for item in meshDevice:
+		# print(f"nvpnMeshPort.splitMeshRights | --item: { item } --meshDevice: { meshDevice[item] }")
 
-		# print(f"splitMeshRights item = {item}")
+		if item in thisDeviceRights.keys():
+			thisDeviceRights[item] = meshDevice[item]
 
-		if "Allows" in item:
-			remotePeerRights.append( ( item, meshDevice[item] ) )
+		elif item in remotePeerRights.keys():
+			remotePeerRights[item] = meshDevice[item]
 
-		elif "Allow" in item:
-			thisDeviceRights.append( ( item, meshDevice[item] ) )
-
-	thisDeviceRights.append( ("Accept Fileshare Automatically", meshDevice[item]) )
-
-	# dynamic_logging(f"splitMeshRights retval[0]: { json.dumps( thisDeviceRights, indent = 4 ) }")
-	# dynamic_logging(f"splitMeshRights retval[1]: { json.dumps( remotePeerRights, indent = 4 ) }")
+	# print(f"nvpnMeshPort.splitMeshRights | --thisDeviceRights: { json.dumps( thisDeviceRights, indent = 4 ) }")
+	# print(f"nvpnMeshPort.splitMeshRights | --remotePeerRights: { json.dumps( remotePeerRights, indent = 4 ) }")
 
 	return [ thisDeviceRights, remotePeerRights ]
+
+"""
+    "Distribution": "26.2.0",
+
+    "Allow Incoming Traffic": true,
+    "Allow Routing": false,
+    "Allow Local Network Access": false,
+    "Allow Sending Files": true,
+    "Accept Fileshare Automatically": false
+
+    "Allows Incoming Traffic": false,
+    "Allows Routing": false,
+    "Allows Local Network Access": false,
+    "Allows Sending Files": false,
+
+"""

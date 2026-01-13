@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-############################################
-#### 		nvpnPort.py 				####
-#### 		Version 20250506 	grid	####
-############################################
+################################
+#### 	nvpnPort.py 		####
+#### 	Version 20260113 	####
+################################
 
 import sys
 import os
@@ -14,7 +14,7 @@ import psutil
 import requests	
 
 from datetime import datetime
-#from pubsub import pub
+# Not used here, so far. from pubsub import pub
 
 import nvpnPort as nvpnT
 import myTheme as skin
@@ -121,7 +121,7 @@ def nordPort( cmdArgs:[] ):
 		if len(cmdArgs) > 1:
 			nordPortResp = subprocess.check_output( cmdArgs, stderr= subprocess.STDOUT ).decode('utf-8')
 			# subprocess.check_output( cmdArgs ).decode('utf-8')
-			print(f"nordPort: --nordPortResp(RAW): { str( nordPortResp ) }")
+			# print(f"nordPort: --nordPortResp(RAW): { str( nordPortResp ) }")
 		else:
 			print(f"nordPort| cmdArgs must have at least 2 items ('nordvpn', 'item')")
 			nordPortResp = ["cmdArgs must have at least 2 items"]
@@ -688,7 +688,7 @@ def addToConns(newCon):
 	if len(allConsArr) < 3:
 		saveJson( allConnsPath, allConsArr )
 	else:
-		saveJson( allConnsPath, allConsArr[-3:] )
+		saveJson( allConnsPath, allConsArr[0:3] )
 
 ############################################################################
 # App-Levels

@@ -2,7 +2,7 @@
 
 ########################################
 #### 	cls_Frm_Mesh_ThisDevice.py 	####
-#### 	Version 20250702 	grid	####
+#### 		Version 20260109 		####
 ########################################
 
 import tkinter as tk
@@ -16,9 +16,10 @@ from idlelib.tooltip import Hovertip
 
 from pubsub import pub
 
-
+#==============================================================================
 class ThisDevice( tk.Frame ):
 
+	#--------------------------------------------------------------------------
 	def __init__(
 			self,
 			master = None,
@@ -34,6 +35,7 @@ class ThisDevice( tk.Frame ):
 		self.dimensions = dimensions
 		self.thisDevice = deviceArr
 		self.peerRights = []
+		self.showAttrs = ["Status","Hostname","Nickname","IP","Public Key","OS","Distribution"]
 
 		# print(f"ThisDevice| --dimensions: { self.dimensions } len deviceArr = { len( self.thisDevice ) }")
 
@@ -49,143 +51,96 @@ class ThisDevice( tk.Frame ):
 		self.doLayOut()
 
 
+	#--------------------------------------------------------------------------
 	def newPeerRightsListener( self, anyArgs ):
 		# print(f"ThisDevice | newPeerRightsListener - { anyArgs }")
 		self.peerRights = anyArgs[0]
 		self.chosenPeerName = anyArgs[1]
-		# print(f"ThisDevice | newPeerRightsListener --self.peerRights: { self.peerRights } --self.chosenPeerName: { self.chosenPeerName }")
 		self.doLayOut()
 
+	#--------------------------------------------------------------------------
+	def clearExistingFrame( self ):
+		try:
+			if self.td_FrameUp.grid_info():
+				self.td_FrameUp.grid_forget()
 
+		except Exception as e:
+			print(f"ThisDevice.clearExistingFrame ! Exception: {e}")
 
-	def createThisDevicePanel( self, parentFrame, thisDevArr ):
-		if len( thisDevArr ) > 0:
-			tDev = thisDevArr
-			# print(f"ThisDevice | createThisDevicePanel. tDev = { json.dumps( tDev, indent=2 ) }")
-			rowCounter = 1
-			hdrLblBG = skin.myLRed
-			pubMsg = ["status: disconnected",""]
-
-			# get device connection status
-			self.connStatArray = nvpnT.getNvpnItem( 'status' )
-			# print(f"ThisDevice | createThisDevicePanel | { self.connStatArray }")
-			if self.connStatArray[0][1].upper() == "CONNECTED":
-				hdrLblBG = skin.myLGreen
-				pubMsg[0] = "status: connected.\n"
-
-			theHdrLabel = tk.Label( 
-				parentFrame, 
-				text = self.connStatArray[0][0].upper(), 
-				bg = skin.myBlack, 
-				fg = skin.myNYellow, 
-				font = skin.provideFont('B') 
-			)
-			theHdrLabel.grid( row = rowCounter, column = 0, padx = 2, pady = 2, sticky = "WE")
-
-			theHdrValue = tk.Label( 
-				parentFrame, 
-				text = self.connStatArray[0][1].upper(), 
-				bg = hdrLblBG, 
-				fg = skin.myBlack, 
-				font = skin.provideFont('B') 
-			)
-			theHdrValue.grid( row = rowCounter, column = 1, padx = 2, pady = 2, sticky = "WE")
-
-			rowCounter += 1
-
-			for entry in tDev:
-				key = entry
-				value = tDev[ entry ]
-				# print(f"ThisDevice | createThisDevicePanel - clmn { rowCounter }: key = { key } value = { value }")
-
-				theLabel = tk.Label( 
-					parentFrame, 					
-					text = key.upper(), 
-					bg = skin.myBlack, 
-					fg = skin.myNYellow, 
-					font = skin.provideFont('B') 
-				)
-				theLabel.grid( row = rowCounter, column = 0, padx = 2, pady = 2, sticky = "WE" )
-
-				valTxt = value
-				if "Key" in key:
-					valTxt = f"{ value[0:12] } ..."
-
-				elif "Hostname" in key:
-					pubMsg[1] = f"ThisDevice Hostname of this Device: {value}"
-					pbmsg = f"{pubMsg[0]}: {pubMsg[1]}"
-					pub.sendMessage( "myStatusBarUpdate", anyArgs = pbmsg )
-
-				theValue = tk.Label( 
-					parentFrame, 
-					text = valTxt, 
-					bg = skin.myLBlue, 
-					fg = skin.myBlack, 
-					font = skin.provideFont('B') 
-				)
-				theValue.grid( row = rowCounter, column = 1, padx = 2, pady = 2, sticky = "WE" )
-
-				rowCounter += 1
-
-
-			if rowCounter > 4:
-
-				if len( self.peerRights ) > 0:
-					
-					rightsCounter = 0
-					# print(f"jdon dumps peerRights { json.dumps( self.peerRights, indent = 2) }")
-
-					for r,v in self.peerRights[0] :
-
-						rightsCounter += 1
-						bttntxt  = "change to "
-
-						if ( r == "Accept Fileshare Automatically" ):							
-							if v == "enabled":
-								bttntxt += "disable"
-								rightsClr = skin.myLGreen
-							elif v == "disabled":
-								bttntxt += "enable"
-								rightsClr = skin.myLRed
-						else:
-							if v == "enabled":
-								bttntxt += "Deny"
-								rightsClr = skin.myLGreen
-
-							elif v == "disabled":
-								bttntxt += "Allow"
-								rightsClr = skin.myLRed
-
-						# print(f"ThisDevice | createThisDevicePanel self.peerRights r={r} \nv={v} \nbttntxt={bttntxt} \nrightsClr={rightsClr}")
-						rghtsLblVal = tk.Label(
-							parentFrame, 
-							text = bttntxt, 
-							bg = rightsClr, 
-							fg = skin.myBlack, 
-							font = skin.provideFont('B') 
-						)
-						rghtsLblVal.grid( row = rightsCounter, column = 2, padx = 2, pady = 2, sticky = 'WE')
-
-						rghtsLblValToolTip = Hovertip( rghtsLblVal, f"Click to change the {r} setting\non this device to '{ bttntxt.split(' ')[-1] }'\nfor { self.chosenPeerName }")
-
-						"""
-						rghtsLblTxt = tk.Label(
-							parentFrame, 
-							text = r, 
-							bg = rightsClr, 
-							fg = skin.myBlack, 
-							font = skin.provideFont('N') 
-						)
-						rghtsLblTxt.grid( row = rightsCounter, column = 3, sticky = 'WE')
-						"""
-
-
-
+	#--------------------------------------------------------------------------
 	def doLayOut( self ):
+		self.clearExistingFrame()
+		self.td_FrameUp = tk.Frame( self.thisDeviceGrid, bg = skin.myBlack )
 
-		self.createThisDevicePanel( self.thisDeviceGrid, self.thisDevice )
+		try:
+			labelClmn = 0 
+			valueClmn = 1
+			rghtsClmn = 2 
+			thisDeviceAttrs = [ pAttr for pAttr in self.thisDevice if pAttr in self.showAttrs ]
+			thisDeviceRights = [ tdRight for tdRight in self.peerRights ] #  if 'Allow' in tdRight
+			# print(f"ThisDevice.doLayOut | --START --self.peerRights: { json.dumps( self.peerRights, indent = 4 )  }")
+			# print(f"ThisDevice.doLayOut | --START --thisDeviceAttrs: { json.dumps( thisDeviceAttrs, indent = 4 )  }")
+			# print(f"ThisDevice.doLayOut | --START --thisDeviceRights: { json.dumps( thisDeviceRights, indent = 4 )  }")
+
+			if len( thisDeviceAttrs ) > 0:
+				#print(f"ThisDevice.doLayOut | --self.thisDevice: {self.thisDevice}\n")
+				statusLblBG = skin.myDRed
+				if "Status" in thisDeviceAttrs:
+					# print(f"ThisDevice.doLayOut | --Status was present")
+					statusLblBG = skin.myLGreen if self.thisDevice['Status'].lower() == "connected" else skin.myDRed
+				else:
+					# print(f"ThisDevice.doLayOut | --Status NOT present")
+					self.thisDevice['Status'] = "disconnected" 
+					thisDeviceAttrs = [ pAttr for pAttr in self.thisDevice if pAttr in self.showAttrs ]
+
+				# print(f"ThisDevice.doLayOut | --thisDeviceAttrs: { thisDeviceAttrs }")
+
+				for i,a in enumerate(self.showAttrs):
+					#print(f"ThisDevice.doLayOut | --i: {i} --a: {a} --self.thisDevice[a]: { self.thisDevice[a] }")
+
+					attr_lbl = tk.Label( 
+						self.td_FrameUp, 
+						text = f"{ a.upper() }", 
+						bg = skin.myBlack, 
+						fg = skin.myDBlue, 
+						font = skin.provideFont('B') 
+					)
+
+					attr_val_txt = f"{self.thisDevice[a][0:10]}..." if a == "Public Key" else self.thisDevice[a]
+					attr_val = tk.Label( 
+						self.td_FrameUp, 
+						text = f"{ attr_val_txt } ", 
+						bg = skin.myDBlue, 
+						fg = skin.myBlack, 
+						font = skin.provideFont('B') 
+					)
+
+					attr_lbl.grid( row = i, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
+					attr_val.grid( row = i, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
+
+			if len( thisDeviceRights ) > 0:
+
+				for i,p in enumerate(self.peerRights[0]):
+					# print(f"ThisDevice.doLayOut | --self.peerRights[0][p]: { self.peerRights[0][p] }")
+
+					rights_val_bg = ( skin.myTrue, skin.myBlack ) if self.peerRights[0][p] else ( skin.myFalse, skin.myWhite )
+					rights_val = tk.Label( 
+						self.td_FrameUp, 
+						text = f"{ self.peerRights[0][p] }", 
+						bg = rights_val_bg[0], 
+						fg = rights_val_bg[1], 
+						font = skin.provideFont('B') 
+					)
+					rights_val.grid( row = i, column = rghtsClmn, padx = 2, pady = 2, sticky = 'WE' )
+					# rights_valToolTip = Hovertip( rights_val, f"Click to change the {r} setting\non this device to '{ bttntxt.split(' ')[-1] }'\nfor { self.chosenPeerName }")
 
 
-		# Finally draw the main grid
-		self.thisDeviceGrid.grid( row = 0, column = 0, padx = 2, pady = 2, sticky = 'WENS' )
+		except Exception as e:
+			print(f"ThisDevice.doLayOut ! Exception: {e}")
+
+		finally:
+			# Finally place td_FrameUp on the grid
+			self.td_FrameUp.grid( row = 0, column = 0, sticky = 'WENS' )
+			# Finally draw the main grid
+			self.thisDeviceGrid.grid( row = 0, column = 0, padx = 2, pady = 2, sticky = 'WENS' )
 

@@ -31,7 +31,9 @@ class URLDialog:
 			dlgRoot, 
 			text = 'Log in to NordVPN via browser. Then restart the app after you have logged in.',
 			font = skin.provideFont(22) ,
-			bg = skin.myLbxBG )
+			bg = skin.myLbxBG,
+			textwrap = 200
+		)
 		self.myLabel.grid( row = 0, column = 0)
 
 		self.openURLLbl = tk.Label(
@@ -39,8 +41,8 @@ class URLDialog:
 			background 		= skin.myBlack,
 			foreground 		= skin.myLGreen,
 			text 			= self.url,
-			font 			= skin.provideFont(12)
-			#,textwrap 		= 200
+			font 			= skin.provideFont(12),
+			textwrap 		= 200
 		)
 		self.openURLLbl.grid( row = 1, column = 0, sticky = 'wens' )
 

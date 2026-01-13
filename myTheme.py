@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-########################################
-#### 		myTheme.py				####
-#### 	Version 20250723 	grid	####
-########################################
+################################
+#### 		myTheme.py		####
+#### 	Version 20260113 	####
+################################
 
 import os
 import tkinter as tk
@@ -18,43 +18,56 @@ baseDir = os.path.abspath( os.path.dirname(__file__) )
 # logo
 global logoPathStr
 logoPathStr =  os.path.join( baseDir, "img", "linux-big.png" )
-print(f"myTheme | logoPathStr exists? { os.path.isfile( logoPathStr ) } ")
+# print(f"myTheme | logoPathStr exists? { os.path.isfile( logoPathStr ) } ")
 
 global icoPath
 icoPath =  os.path.join( baseDir, "img", "linux-big.png" )
-print(f"myTheme | icoPath exists? { os.path.isfile( icoPath ) } ")
+# print(f"myTheme | icoPath exists? { os.path.isfile( icoPath ) } ")
 
 global inAppSvgPaths
-inAppSvgPaths =  os.path.join( baseDir, "img/fontawesome7.0.0/svgs/solid/" )
-print(f"myTheme | inAppSvgPaths exists? { os.path.isdir( inAppSvgPaths ) } ")
+inAppSvgPaths =  os.path.join( baseDir, "fontawesome7.0.0/svgs/solid/" )
+# print(f"myTheme | inAppSvgPaths exists? { os.path.isdir( inAppSvgPaths ) } ")
 
 global inAppIconsPath
 inAppIconsPath =  os.path.join( baseDir, "img", "inAppIcons" )
-print(f"myTheme | inAppIconsPath exists? { os.path.isdir( inAppIconsPath ) } ")
+# print(f"myTheme | inAppIconsPath exists? { os.path.isdir( inAppIconsPath ) } ")
 
 
+#------------------------------------------------------------------------------
 def logoPath():
 	return logoPathStr
 
 
+#------------------------------------------------------------------------------
 def convertToPNG( svgName ):
-	srcName = os.path.join( inAppSvgPaths, f"{svgName}.svg" )
+	
 	pngName = os.path.join( inAppIconsPath, f"{svgName}.png" )
 
 	if os.path.exists( pngName ):
-		print(f"myTheme | convertToPNG --svgName: { svgName } = { srcName }\nexists already as\n{ pngName }" )
+		pass
+		# print(f"myTheme | convertToPNG --svgName: { svgName } = { srcName }\nexists already as\n{ pngName }" )
 	else:
-		if os.path.exists( srcName ):
-			svg_code = open( srcName, 'rt').read()
-			svg2png( bytestring = svg_code, write_to = pngName )
+		if os.path.isdir(inAppSvgPaths):
+			srcName = os.path.join( inAppSvgPaths, f"{svgName}.svg" )
+
+			if os.path.exists( srcName ):
+				svg_code = open( srcName, 'rt').read()
+				svg2png( bytestring = svg_code, write_to = pngName )
+				print(f"Created new icon file for {svgName} .Should only happen in BETA !!")
+			else:
+				# The name of this icon isn't found
+				pngName = icoPath
+
+		else:
+			# Can't make a .png icon. returning linux default
+			pngName = icoPath
 
 	return pngName
 
-
-
+#------------------------------------------------------------------------------
 def iconPath( iconName="pan-down-symbolic"):
 	retValPath = convertToPNG( iconName )
-	print(f"returning iconPath: { retValPath }")
+	# print(f"returning iconPath: { retValPath }")
 	if os.path.isfile(retValPath):
 		return retValPath
 	else:
@@ -62,6 +75,7 @@ def iconPath( iconName="pan-down-symbolic"):
 
 
 # Create fonts
+#------------------------------------------------------------------------------
 def provideFont( size = "N" ):
 	mySmallFont = tkFont.Font( family="Arial", size=10, weight=tkFont.NORMAL )
 	myNormalFont= tkFont.Font( family="Arial", size=12, weight=tkFont.NORMAL )

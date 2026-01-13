@@ -73,7 +73,7 @@ class TabAccount( tk.Frame ):
 				self.tabAccGridFrame,
 				dimensions = [  int( self.tabWidth * 0.45 ), int( self.tabHeight * 0.24 ) ]
 			)
-			self.tabAccActConnFrame.grid( row = 1, column = 0, columnspan = 1, sticky = 'WENS' )
+			self.tabAccActConnFrame.grid( row = 1, column = 0, columnspan = 1, sticky = 'wens' )
 
 
 	def doLayout( self ):

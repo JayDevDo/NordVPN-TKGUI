@@ -2,19 +2,19 @@
 
 ########################################
 #### cls_Frm_Mesh_LocalDevices.py 	####
-#### 	Version 20250624 	grid	####
+#### 		Version 20260110		####
 ########################################
 
+import os, json
 import tkinter as tk
-import json
 import myTheme as skin
 import meshnet.nvpnMeshPort as meshPort
 from pubsub import pub
 from idlelib.tooltip import Hovertip
 
-
 class SelectedPeer( tk.Frame ):
 
+	#--------------------------------------------------------------------------
 	def __init__(
 			self,
 			master = None ,
@@ -27,7 +27,7 @@ class SelectedPeer( tk.Frame ):
 		self.configure( background = skin.myBlack )
 		self.grid()
 		self.dimensions = dimensions
-
+		self.showAttrs = ["Status","Hostname","Nickname","IP","Public Key","OS","Distribution"]
 		# print(f"SelectedPeer| --dimensions: { self.dimensions }")
 
 		self.selectedPeerGrid = tk.Frame( 
@@ -47,240 +47,90 @@ class SelectedPeer( tk.Frame ):
 
 		self.doLayOut()
 
-
-
+	#--------------------------------------------------------------------------
 	def thisDeviceListener( self, anyArgs ):
 		# pub.sendMessage( "thisDeviceUpdate", anyArgs=[ self.meshDevices[0]['Hostname'] ] )
 		# print(f"SelectedPeer | thisDeviceListener - { anyArgs }")
 		self.thisDeviceName = anyArgs[0]
 
-
+	#--------------------------------------------------------------------------
 	def peerSelectionListener( self, anyArgs ):
-		# print(f"SelectedPeer | peerSelectionListener - { anyArgs }")
+		# print(f"SelectedPeer | peerSelectionListener - { json.dumps( anyArgs, indent = 4 ) }")
 		self.chosenPeerName = anyArgs[0]
 		self.chosenPeerArr 	= anyArgs[1]
-		self.peerRights = anyArgs[2][1]
+		self.peerRights 	= anyArgs[2][1]
+		# print(f"SelectedPeer.peerSelectionListener | --self.peerRights: { self.peerRights }")
 		self.doLayOut()
 
-
-	def getBGColor(self, value):
-		# print(f"SelectedPeer | getBGColor --value: {value}")
-		if value.lower() == "enabled":
-			return skin.myTrue
-		else:
-			return skin.myFalse 
-
-
+	#--------------------------------------------------------------------------
 	def doLayOut( self ):
-		self.bFrameUp 	= tk.Frame(	self.selectedPeerGrid, bg = skin.myBlack )
+		"""
+			Each row consists of rightsIndecator, DeviceAtrr, DeviceAtrrValue
+			Data for permissions are taken from self.peerRights 
+			Data for DeviceAtrr and DeviceAtrrValue are taken from self.chosenPeerArr
+		"""
+		self.bFrameUp = tk.Frame( self.selectedPeerGrid, bg = skin.myBlack )
+		# Filter attributes of self.chosenPeerArr
+		#  [ myPic for myPic in tmpImgList if myPic.split('.')[-1] in self.allowedExtensions ]
+		chosenPeerAttrs = [ pAttr for pAttr in self.chosenPeerArr if pAttr in self.showAttrs ]
 
-		if len( self.chosenPeerArr ) > 0:
-			# print(f"SelectedPeer start of doLayOut")
+		if len( chosenPeerAttrs ) > 0:
+			# print(f"SelectedPeer.doLayOut | START --chosenPeerAttrs: { json.dumps( chosenPeerAttrs, indent=4 ) }")
 			
 			try:
-				self.bFrameUp.grid_info()
-				self.bFrameUp.grid_forget()
-
-				# print(f"SelectedPeer | updatePeerInfoFrame - len self.chosenPeerArr = { len(self.chosenPeerArr) }")
-				# print(f"SelectedPeer | len self.peerRights  = { len( self.peerRights ) }")
+				if self.bFrameUp.grid_info():
+					self.bFrameUp.grid_forget()
 
 			except Exception as e:
 				print(f"SelectedPeer | updatePeerInfoFrame Exception = {e}")
 
 			finally:
+				# First add localPeer Attrs (currently 7 out of 18 total )
+				# Second add localPeer permissions (4)
+				rghtsClmn = 0 
+				valueClmn = 1
+				labelClmn = 2 
 
-				statusLblBG  = skin.myDRed
-
-				if self.chosenPeerArr['Status'].lower() == "connected":
-					statusLblBG  = skin.myLGreen
-
-
-				if len( self.peerRights ) == 4:
-					rghtsClmn = 0 
-					labelClmn = 2 
-					valueClmn = 1
-				else:
-					rghtsClmn = 2 
-					labelClmn = 0 
-					valueClmn = 1
-
-				if True:
-					# bFrameUp labels:
-					statusLbl = tk.Label( 
+				statusLblBG = skin.myLGreen if self.chosenPeerArr['Status'].lower() == "connected" else skin.myDRed
+				for i,a in enumerate(self.showAttrs):
+					# print(f"SelectedPeer.doLayOut | --i: {i} --a: {a} --self.chosenPeerArr[a]: { self.chosenPeerArr[a] }")
+	
+					attr_lbl = tk.Label( 
 						self.bFrameUp, 
-						text = "STATUS: ", 
+						text = f"{ a.upper() }", 
 						bg = skin.myBlack, 
 						fg = skin.myDBlue, 
 						font = skin.provideFont('B') 
 					)
 
-					statusTxt = tk.Label( 
+					attr_val_txt = f"{self.chosenPeerArr[a][0:10]}..." if a == "Public Key" else self.chosenPeerArr[a]
+					attr_val = tk.Label( 
 						self.bFrameUp, 
-						text = self.chosenPeerArr['Status'], 
-						bg = statusLblBG, 
-						fg = skin.myBlack, 
-						font = skin.provideFont('B') 
-					)
-
-					rightsLbl1 = tk.Label( 
-						self.bFrameUp, 
-						text = self.peerRights[0][1], 
-						bg = self.getBGColor(self.peerRights[0][1]), 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-
-					rightsLbl1.grid( row = 0, column = rghtsClmn, padx = 2, pady = 2, sticky = 'WE' )
-					rightsLbl1ToolTip = Hovertip( rightsLbl1, f"On { self.chosenPeerName } \nchange {self.peerRights[0][0]} \nfor { self.thisDeviceName }")
-					statusLbl.grid( row = 0, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
-					statusTxt.grid( row = 0, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
-
-					hostNameLbl = tk.Label( 
-						self.bFrameUp, 
-						text = "HOSTNAME: ", 
-						bg = skin.myBlack, 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-
-					hostNameTxt = tk.Label( 
-						self.bFrameUp, 
-						text = self.chosenPeerArr['Hostname'], 
+						text = f"{ attr_val_txt } ", 
 						bg = skin.myDBlue, 
 						fg = skin.myBlack, 
 						font = skin.provideFont('B') 
 					)
 
-					rightsLbl2 = tk.Label( 
+					attr_lbl.grid( row = i, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
+					attr_val.grid( row = i, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
+
+				for i,p in enumerate(self.peerRights):
+					# print(f"SelectedPeer.doLayOut | --i: {i} --p: {p} --self.peerRights[p]: { self.peerRights[p] }")
+					rights_val_bg = skin.myTrue if self.peerRights[p] else skin.myFalse
+						
+					rights_val_bg = ( skin.myTrue, skin.myBlack ) if self.peerRights[p] else ( skin.myFalse, skin.myWhite )		
+					rights_val = tk.Label( 
 						self.bFrameUp, 
-						text = self.peerRights[1][1], 
-						bg = self.getBGColor(self.peerRights[1][1]), 
-						fg = skin.myDBlue, 
+						text = f"{ self.peerRights[p] }", 
+						bg = rights_val_bg[0], 
+						fg = rights_val_bg[1], 
 						font = skin.provideFont('B') 
 					)
+					rights_val.grid( row = i, column = rghtsClmn, padx = 2, pady = 2, sticky = 'WE' )
 
-					rightsLbl2ToolTip = Hovertip( rightsLbl2, f"On { self.chosenPeerName } \nchange {self.peerRights[1][0]} \nfor { self.thisDeviceName }")
-					rightsLbl2.grid(  row = 1, column = rghtsClmn, padx = 2, pady = 2, sticky = 'WE' )
-					hostNameLbl.grid( row = 1, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
-					hostNameTxt.grid( row = 1, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
-
-
-					nickNameLbl = tk.Label( 
-						self.bFrameUp, 
-						text = "NICKNAME: ", 
-						bg = skin.myBlack, 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-
-					nickNameTxt = tk.Label( 
-						self.bFrameUp, 
-						text = self.chosenPeerArr['Nickname'], 
-						bg = skin.myDBlue, 
-						fg = skin.myBlack, 
-						font = skin.provideFont('B') 
-					)
-
-					rightsLbl3 = tk.Label( 
-						self.bFrameUp, 
-						text = self.peerRights[2][1], 
-						bg = self.getBGColor(self.peerRights[2][1]), 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-
-					rightsLbl3ToolTip = Hovertip( rightsLbl3, f"On { self.chosenPeerName } \nchange {self.peerRights[2][0]} \nfor { self.thisDeviceName }")
-					rightsLbl3.grid(  row = 2, column = rghtsClmn, padx = 2, pady = 2, sticky = 'WE' )
-					nickNameLbl.grid( row = 2, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
-					nickNameTxt.grid( row = 2, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
-
-					ipLbl = tk.Label( 
-						self.bFrameUp, 
-						text = "IP: ", 
-						bg = skin.myBlack, 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-					
-					ipTxt = tk.Label( 
-						self.bFrameUp, 
-						text = self.chosenPeerArr['IP'], 
-						bg = skin.myDBlue, 
-						fg = skin.myBlack, 
-						font = skin.provideFont('B') 
-					)
-
-					rightsLbl4 = tk.Label( 
-						self.bFrameUp, 
-						text = self.peerRights[3][1], 
-						bg = self.getBGColor(self.peerRights[3][1]), 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-
-					rightsLbl4ToolTip = Hovertip( rightsLbl4, f"On { self.chosenPeerName } \nchange {self.peerRights[3][0]} \nfor { self.thisDeviceName }")
-					rightsLbl4.grid( row = 3, column = rghtsClmn, padx = 2, pady = 2, sticky = 'WE' )
-					ipLbl.grid( row = 3, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
-					ipTxt.grid( row = 3, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
-
-
-					pubKeyLbl = tk.Label( 
-						self.bFrameUp, 
-						text = "PUBLIC KEY: ", 
-						bg = skin.myBlack, 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-
-					pubKeyTxt = tk.Label( 
-						self.bFrameUp, 
-						text = f"{ self.chosenPeerArr['Public Key'][0:12]} ..." , 
-						bg = skin.myDBlue, 
-						fg = skin.myBlack, 
-						font = skin.provideFont('B') 
-					)
-					pubKeyLbl.grid( row = 4, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
-					pubKeyTxt.grid( row = 4, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
-
-					osLbl = tk.Label( 
-						self.bFrameUp, 
-						text = "OS: ", 
-						bg = skin.myBlack, 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-
-					osTxt = tk.Label( 
-						self.bFrameUp, 
-						text = self.chosenPeerArr['OS'], 
-						bg = skin.myDBlue, 
-						fg = skin.myBlack, 
-						font = skin.provideFont('B') 
-					)
-					osLbl.grid( row = 5, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
-					osTxt.grid( row = 5, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
-					
-
-					distriLbl = tk.Label( 
-						self.bFrameUp, 
-						text = "DISTRIBUTION: ", 
-						bg = skin.myBlack, 
-						fg = skin.myDBlue, 
-						font = skin.provideFont('B') 
-					)
-
-					distriTxt = tk.Label( 
-						self.bFrameUp, 
-						text = self.chosenPeerArr['Distribution'], 
-						bg = skin.myDBlue, 
-						fg = skin.myBlack, 
-						font = skin.provideFont('B') 
-					)
-					distriLbl.grid( row = 6, column = labelClmn, padx = 2, pady = 2, sticky = 'WE' )
-					distriTxt.grid( row = 6, column = valueClmn, padx = 2, pady = 2, sticky = 'WE' )
-
-					self.bFrameUp.grid( row = 0, column = 0, sticky = 'WENS' )
-
+				# Finally place bFrameUp on the grid
+				self.bFrameUp.grid( row = 0, column = 0, sticky = 'WENS' )
 
 		else:
 			print(f"SelectedPeer len self.chosenPeerArr == 0" )
