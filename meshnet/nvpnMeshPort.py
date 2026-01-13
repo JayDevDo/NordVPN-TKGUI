@@ -93,11 +93,11 @@ def nordVPN_Device(args):
 	"""
 		Hostname and Nickname change place when Nickname is not "-"
 		Stores default device object
-			 = Hostname: jayvando-everest.nord
+			 = Hostname: 
 			 = Nickname: -
 			 = Status: disconnected
 			 = IP:
-			 = Public Key: 5sXghSLWHHejUXtRdji1sXs6fcOtxh1LT77ke81Emy0=
+			 = Public Key: 
 			 = OS: linux
 			 = Distribution: Linux Mint
 			 = Allow Incoming Traffic: enabled
