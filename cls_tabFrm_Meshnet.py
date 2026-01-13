@@ -2,8 +2,22 @@
 
 ########################################
 #### 	cls_tabFrm_Meshnet.py 		####
-#### 	Version 20250702 	grid	####
+#### 	Version 20260113 			####
 ########################################
+
+"""
+Version 202601-LM
+Works when logged in on a Linux Mint environment.
+MESHNET:
+	Working:
+		- identifying this Device (tD)
+		- selecting local peer 	(lP)
+		- changing permissions for this tD-lP combo
+
+	To Implement:
+		- Changing nickname tD
+		- removing lP
+"""
 
 import tkinter as tk
 from tkinter import ttk
@@ -58,44 +72,45 @@ class TabMeshDevices( tk.Frame ):
 			labelanchor = 's'
 		)
 
+		self.meshDevices 		= [] 	# After getMeshList this should have 3 items [thisDevice, localPeers, externalPeers ]
+		self.peerNames 			= [] 	# Hostnames gathered from localPeers
+		self.selectedPeerIdx 	= 0 	# index of selected peer in localPeers
+		self.selectedPeerName 	= ""  	# hostName of selectedPeer from localPeers
+		self.selectedPeerArr 	= [] 	# all attributes of selectedPeer from localPeers
+		self.peerRights 		= [] 	# contains the rights of this device and selected peer for each other on; routing,local,incoming,fileshare
+
 		if self.meshNetActivated:
-			self.meshDevices 		= [] 	# After getMeshList this should have 3 items [thisDevice, localPeers, externalPeers ]
-			self.peerNames 			= [] 	# Hostnames gathered from localPeers
-
-			self.selectedPeerIdx 	= 0 	# index of selected peer in localPeers
-			self.selectedPeerName 	= ""  	# hostName of selectedPeer from localPeers
-			self.selectedPeerArr 	= [] 	# all attributes of selectedPeer from localPeers
-			self.peerRights 		= [] 	# contains the rights of this device and selectedpeer for each other on; routing,local,incoming,fileshare
-
-			# print(f"TabMeshDevices. current meshDevs = { len( self.meshDevices ) } --> getting meshDevices")
+			print(f"TabMeshDevices.Init | --current meshDevs = { len( self.meshDevices ) } --> getting meshDevices")
 			self.getMeshList() 
 			# print(f"TabMeshDevices. got meshDevices { len( self.meshDevices ) }")
 
 		else:
 			# Meshnet not activated
+			print(f"TabMeshDevices.Init | Meshnet not activated in SETTINGS")
 			self.meshNotActiveHdr = tk.Label(
 				self,
-				text = "Meshnet not activated in SETTINGS:",
+				text = "Meshnet not activated in SETTINGS",
 				font = skin.provideFont("H"),
 				bg = skin.myDRed,
 				fg = skin.myWhite
 			)
 			self.meshNotActiveHdr.grid( row = 0, column = 0, columnspan = 3, padx = 2, pady = 2, sticky = 'WENS' )
 
-
-
+	#--------------------------------------------------------------------------
 	def getMeshList( self ):
 		# print(f"TabMeshDevices | getMeshList start")
-		tmpList = meshPort.meshPort( [ "nordvpn", "meshnet", "peer", "list" ] )
-		self.meshDevices = meshPort.parseMeshPeerList(tmpList)
-		self.parsePeerArray( self.meshDevices[1] )
-		pub.sendMessage( "thisDeviceUpdate", anyArgs=[ self.meshDevices[0]['Hostname'] ] )
+		# tmpList = meshPort.meshPort( [ "nordvpn", "meshnet", "peer", "list" ] )
+		self.meshDevices = meshPort.splitPeerList()
+		if len(self.meshDevices)>1:
+			self.parsePeerArray( self.meshDevices[1] )
+			pub.sendMessage( "thisDeviceUpdate", anyArgs=[ self.meshDevices[0]['Hostname'] ] )
 
-
-
+	#--------------------------------------------------------------------------
 	def parsePeerArray( self, peerListFull ):
-		# print(f"TabMeshDevices | parsePeerArray - peerListFull = { json.dumps( peerListFull, indent = 2 ) }")
+		# To fill the dropdown of peers
+		# print(f"TabMeshDevices.parsePeerArray | --peerListFull: { json.dumps( peerListFull, indent = 2 ) }")
 		self.peerNames = []
+
 		for p in peerListFull:
 			# print(f"parsePeerArray p = { p }")
 			self.peerNames.append( p['Hostname'] )
@@ -108,8 +123,7 @@ class TabMeshDevices( tk.Frame ):
 		#print(f"TabMeshDevices | parsePeerArray - self.selectedPeerArr = { json.dumps( self.selectedPeerArr, indent = 2 ) }")
 		self.doLayOut()
 
-
-
+	#--------------------------------------------------------------------------
 	def setPickedPeer( self , event ):
 		pickedPeer = self.selectPeer.get() 
 		self.selectedPeerIdx 	= self.peerNames.index( pickedPeer )
@@ -127,6 +141,7 @@ class TabMeshDevices( tk.Frame ):
 		pub.sendMessage( "newPeerRights", anyArgs=[ self.peerRights, self.selectedPeerName ] )
 
 
+	#--------------------------------------------------------------------------
 	def doLayOut( self ):
 
 		self.thisDeviceHdr = tk.Label(

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-########################################
-#### 		NordVPNTKGUI.py 		####
-#### 	Version 20250701 	grid	####
-########################################
+################################
+#### 	NordVPNTKGUI.py 	####
+#### 	Version 20260104 	####
+################################
 
 import tkinter as tk
 from tkinter import ttk
@@ -14,6 +14,7 @@ from pubsub import pub
 #import ttkbootstrap as ttk2
 import myTheme as skin
 import nvpnPort as nvpnT
+import meshnet.nvpnMeshPort as meshPort
 
 from PIL import Image
 from PIL import ImageTk
@@ -45,6 +46,10 @@ def iconifyImage( imagePath ):
 # First get the status of nordvpn services/processes. This will set the globals:  --glbl_serviceActive and --glbl_loginStatus
 curStatus = nvpnT.nordProcesses()
 print(f"NordVPNTKGUI | --nordProcesses: {curStatus}\n--glbl_serviceActive:{ curStatus[0] }\n--glbl_loginStatus: { curStatus[1] }")
+
+# See if meshnet is up
+meshWorking = meshPort.meshNetOnLine()
+print(f"NordVPNTKGUI | --meshWorking: {meshWorking}")
 
 # For code folding purpuse to hide all root window settings
 if True:	
